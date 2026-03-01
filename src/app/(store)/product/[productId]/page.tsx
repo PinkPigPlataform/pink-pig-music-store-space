@@ -31,7 +31,6 @@ export async function generateMetadata({
     collection: 'products',
     where: {
       id: { equals: productId },
-      approvedForSale: { equals: 'approved' },
     },
   })
 
@@ -64,7 +63,6 @@ export default async function ProductPage({ params }: PageProps) {
     limit: 1,
     where: {
       id: { equals: productId },
-      approvedForSale: { equals: 'approved' },
     },
   })
 

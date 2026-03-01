@@ -40,7 +40,6 @@ export const appRouter = router({
       const { docs: items, hasNextPage, nextPage } = await payload.find({
         collection: 'products',
         where: {
-          approvedForSale: { equals: 'approved' },
           ...parsedQueryOpts,
         },
         sort,

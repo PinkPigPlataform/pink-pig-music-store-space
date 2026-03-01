@@ -1,47 +1,31 @@
-import type { Access, CollectionConfig, CollectionBeforeChangeHook } from 'payload'
+import type { Access, CollectionConfig } from 'payload'
 import type { User } from '../payload-types'
 
-const addUser: CollectionBeforeChangeHook = ({ req, data }) => {
-  const user = req.user as User | null
-  return { ...data, user: user?.id }
-}
-
-const yourOwnAndPurchased: Access = async ({ req }) => {
+const yourPurchased: Access = async ({ req }) => {
   const user = req.user as User | null
   if (user?.role === 'admin') return true
   if (!user) return false
 
-  const { docs: products } = await req.payload.find({
-    collection: 'products',
-    depth: 0,
-    where: { user: { equals: user.id } },
-  })
-
-  const ownProductFileIds = products.map((prod) => prod.product_files).flat()
-
   const { docs: orders } = await req.payload.find({
     collection: 'orders',
     depth: 2,
-    where: { user: { equals: user.id } },
+    where: {
+      user: { equals: user.id },
+      _isPaid: { equals: true },
+    },
   })
 
-  const purchasedProductFileIds = orders
-    .map((order) =>
-      order.products.map((product) => {
-        if (typeof product === 'string') return null
-        return typeof product.product_files === 'string'
-          ? product.product_files
-          : product.product_files?.id
-      })
-    )
-    .flat()
+  const purchasedFileIds = orders
+    .flatMap((order) => order.products)
+    .map((product) => {
+      if (typeof product === 'string') return null
+      return typeof product.product_files === 'string'
+        ? product.product_files
+        : product.product_files?.id
+    })
     .filter(Boolean)
 
-  return {
-    id: {
-      in: [...ownProductFileIds, ...purchasedProductFileIds],
-    },
-  }
+  return { id: { in: purchasedFileIds } }
 }
 
 export const ProductFiles: CollectionConfig = {
@@ -49,11 +33,8 @@ export const ProductFiles: CollectionConfig = {
   admin: {
     hidden: ({ user }) => user?.role !== 'admin',
   },
-  hooks: {
-    beforeChange: [addUser],
-  },
   access: {
-    read: yourOwnAndPurchased,
+    read: yourPurchased,
     update: ({ req }) => req.user?.role === 'admin',
     delete: ({ req }) => req.user?.role === 'admin',
   },
@@ -77,7 +58,7 @@ export const ProductFiles: CollectionConfig = {
       relationTo: 'users',
       admin: { condition: () => false },
       hasMany: false,
-      required: true,
+      required: false,
     },
   ],
 }

@@ -72,6 +72,7 @@ export interface Config {
     media: Media;
     product_files: ProductFile;
     orders: Order;
+    categories: Category;
     'payload-kv': PayloadKv;
     'payload-locked-documents': PayloadLockedDocument;
     'payload-preferences': PayloadPreference;
@@ -84,6 +85,7 @@ export interface Config {
     media: MediaSelect<false> | MediaSelect<true>;
     product_files: ProductFilesSelect<false> | ProductFilesSelect<true>;
     orders: OrdersSelect<false> | OrdersSelect<true>;
+    categories: CategoriesSelect<false> | CategoriesSelect<true>;
     'payload-kv': PayloadKvSelect<false> | PayloadKvSelect<true>;
     'payload-locked-documents': PayloadLockedDocumentsSelect<false> | PayloadLockedDocumentsSelect<true>;
     'payload-preferences': PayloadPreferencesSelect<false> | PayloadPreferencesSelect<true>;
@@ -126,8 +128,6 @@ export interface UserAuthOperations {
  */
 export interface User {
   id: string;
-  products?: (string | Product)[] | null;
-  product_files?: (string | ProductFile)[] | null;
   role: 'admin' | 'user';
   updatedAt: string;
   createdAt: string;
@@ -156,13 +156,11 @@ export interface User {
  */
 export interface Product {
   id: string;
-  user?: (string | null) | User;
   name: string;
   description?: string | null;
   price: number;
-  category: 'music_books' | 'backing_tracks' | 'ai_prompts' | 'ai_art';
+  category: string;
   product_files: string | ProductFile;
-  approvedForSale?: ('pending' | 'approved' | 'denied') | null;
   priceId?: string | null;
   stripeId?: string | null;
   images: {
@@ -237,7 +235,7 @@ export interface Media {
   };
 }
 /**
- * A summary of all your orders on Pink Pig.
+ * A summary of all your orders on My Digital Store.
  *
  * This interface was referenced by `Config`'s JSON-Schema
  * via the `definition` "orders".
@@ -247,6 +245,31 @@ export interface Order {
   _isPaid: boolean;
   user: string | User;
   products: (string | Product)[];
+  updatedAt: string;
+  createdAt: string;
+}
+/**
+ * Product categories shown in the store navigation.
+ *
+ * This interface was referenced by `Config`'s JSON-Schema
+ * via the `definition` "categories".
+ */
+export interface Category {
+  id: string;
+  label: string;
+  /**
+   * Slug without spaces, e.g. music_books
+   */
+  value: string;
+  description?: string | null;
+  featured?:
+    | {
+        name: string;
+        href: string;
+        imageSrc?: string | null;
+        id?: string | null;
+      }[]
+    | null;
   updatedAt: string;
   createdAt: string;
 }
@@ -293,6 +316,10 @@ export interface PayloadLockedDocument {
     | ({
         relationTo: 'orders';
         value: string | Order;
+      } | null)
+    | ({
+        relationTo: 'categories';
+        value: string | Category;
       } | null);
   globalSlug?: string | null;
   user: {
@@ -341,8 +368,6 @@ export interface PayloadMigration {
  * via the `definition` "users_select".
  */
 export interface UsersSelect<T extends boolean = true> {
-  products?: T;
-  product_files?: T;
   role?: T;
   updatedAt?: T;
   createdAt?: T;
@@ -368,13 +393,11 @@ export interface UsersSelect<T extends boolean = true> {
  * via the `definition` "products_select".
  */
 export interface ProductsSelect<T extends boolean = true> {
-  user?: T;
   name?: T;
   description?: T;
   price?: T;
   category?: T;
   product_files?: T;
-  approvedForSale?: T;
   priceId?: T;
   stripeId?: T;
   images?:
@@ -464,6 +487,25 @@ export interface OrdersSelect<T extends boolean = true> {
   _isPaid?: T;
   user?: T;
   products?: T;
+  updatedAt?: T;
+  createdAt?: T;
+}
+/**
+ * This interface was referenced by `Config`'s JSON-Schema
+ * via the `definition` "categories_select".
+ */
+export interface CategoriesSelect<T extends boolean = true> {
+  label?: T;
+  value?: T;
+  description?: T;
+  featured?:
+    | T
+    | {
+        name?: T;
+        href?: T;
+        imageSrc?: T;
+        id?: T;
+      };
   updatedAt?: T;
   createdAt?: T;
 }

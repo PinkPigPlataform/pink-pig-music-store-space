@@ -43,9 +43,7 @@ const UserAccountNav = ({ user }: { user: User }) => {
 
         <DropdownMenuSeparator />
 
-        <DropdownMenuItem asChild>
-          <Link href='/sell'>{t('nav.sellerDashboard')}</Link>
-        </DropdownMenuItem>
+
 
         <DropdownMenuItem
           onClick={signOut}

@@ -7,9 +7,6 @@ export default async function sitemap(): Promise<MetadataRoute.Sitemap> {
     const payload = await getPayloadClient()
     const { docs: products } = await payload.find({
         collection: 'products',
-        where: {
-            approvedForSale: { equals: 'approved' },
-        },
         limit: 1000,
     })
 

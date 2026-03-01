@@ -1,76 +1,23 @@
 import type {
-  Access,
   CollectionConfig,
-  CollectionAfterChangeHook,
   CollectionBeforeChangeHook,
 } from 'payload'
 import { PRODUCT_CATEGORIES } from '../../config/index'
-import type { Product, User } from '../../payload-types'
+import type { Product } from '../../payload-types'
 import { stripe } from '../../lib/stripe'
 import { tenantConfig } from '../../config/tenant'
-
-const addUser: CollectionBeforeChangeHook<Product> = async ({ req, data }) => {
-  const user = req.user
-  return { ...data, user: user?.id }
-}
-
-const syncUser: CollectionAfterChangeHook<Product> = async ({ req, doc }) => {
-  if (!req.user) return
-  const fullUser = await req.payload.findByID({
-    collection: 'users',
-    id: req.user.id,
-  })
-
-  if (fullUser && typeof fullUser === 'object') {
-    const { products } = fullUser
-    const allIDs = [
-      ...(products?.map((product) =>
-        typeof product === 'object' ? product.id : product
-      ) || []),
-    ]
-    const createdProductIDs = [...new Set(allIDs)]
-    const dataToUpdate = [...createdProductIDs, doc.id]
-
-    await req.payload.update({
-      collection: 'users',
-      id: fullUser.id,
-      data: { products: dataToUpdate },
-    })
-  }
-}
-
-const isAdminOrHasAccess =
-  (): Access =>
-    ({ req: { user: _user } }) => {
-      const user = _user as User | undefined
-      if (!user) return false
-      if (user.role === 'admin') return true
-
-      const userProductIDs = (user.products || []).reduce<Array<string>>(
-        (acc, product) => {
-          if (!product) return acc
-          if (typeof product === 'string') acc.push(product)
-          else acc.push(product.id)
-          return acc
-        },
-        []
-      )
-
-      return { id: { in: userProductIDs } }
-    }
 
 export const Products: CollectionConfig = {
   slug: 'products',
   admin: { useAsTitle: 'name' },
   access: {
-    read: isAdminOrHasAccess(),
-    update: isAdminOrHasAccess(),
-    delete: isAdminOrHasAccess(),
+    read: () => true,
+    create: ({ req }) => req.user?.role === 'admin',
+    update: ({ req }) => req.user?.role === 'admin',
+    delete: ({ req }) => req.user?.role === 'admin',
   },
   hooks: {
-    afterChange: [syncUser],
     beforeChange: [
-      addUser,
       async (args) => {
         if (args.operation === 'create') {
           const data = args.data as Product
@@ -103,17 +50,9 @@ export const Products: CollectionConfig = {
           }
         }
       },
-    ],
+    ] as CollectionBeforeChangeHook[],
   },
   fields: [
-    {
-      name: 'user',
-      type: 'relationship',
-      relationTo: 'users',
-      required: true,
-      hasMany: false,
-      admin: { condition: () => false },
-    },
     {
       name: 'name',
       label: 'Name',
@@ -147,22 +86,6 @@ export const Products: CollectionConfig = {
       required: true,
       relationTo: 'product_files',
       hasMany: false,
-    },
-    {
-      name: 'approvedForSale',
-      label: 'Product Status',
-      type: 'select',
-      defaultValue: 'pending',
-      access: {
-        create: ({ req }) => req.user?.role === 'admin',
-        read: ({ req }) => req.user?.role === 'admin',
-        update: ({ req }) => req.user?.role === 'admin',
-      },
-      options: [
-        { label: 'Pending verification', value: 'pending' },
-        { label: 'Approved', value: 'approved' },
-        { label: 'Denied', value: 'denied' },
-      ],
     },
     {
       name: 'priceId',

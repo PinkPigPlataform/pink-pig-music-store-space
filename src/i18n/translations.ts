@@ -4,7 +4,6 @@ export const translations = {
         'nav.signIn': 'Entrar',
         'nav.createAccount': 'Criar conta',
         'nav.myAccount': 'Minha conta',
-        'nav.sellerDashboard': 'Painel do Vendedor',
         'nav.logOut': 'Sair',
 
         // Home
@@ -53,9 +52,7 @@ export const translations = {
         'auth.orContinueWith': 'ou continue com email',
         'auth.or': 'ou',
         'auth.continueAsCustomer': 'Continuar como cliente',
-        'auth.continueAsSeller': 'Continuar como vendedor',
         'auth.continueWithGoogle': 'Continuar com Google',
-        'auth.sellerAccount': 'vendedor',
 
         // Thank you
         'thankyou.orderSuccess': 'Pedido realizado com sucesso',
@@ -66,9 +63,6 @@ export const translations = {
         'thankyou.downloadAsset': 'Baixar produto',
 
         // Footer
-        'footer.becomeSeller': 'Seja um vendedor',
-        'footer.becomeSellerDesc': 'Se você deseja vender produtos digitais de alta qualidade, pode começar em minutos.',
-        'footer.getStarted': 'Comece agora',
         'footer.terms': 'Termos',
         'footer.privacy': 'Política de Privacidade',
         'footer.cookies': 'Política de Cookies',
@@ -90,7 +84,6 @@ export const translations = {
         'nav.signIn': 'Sign in',
         'nav.createAccount': 'Create account',
         'nav.myAccount': 'My account',
-        'nav.sellerDashboard': 'Seller Dashboard',
         'nav.logOut': 'Log out',
 
         // Home
@@ -139,9 +132,7 @@ export const translations = {
         'auth.orContinueWith': 'or continue with email',
         'auth.or': 'or',
         'auth.continueAsCustomer': 'Continue as customer',
-        'auth.continueAsSeller': 'Continue as seller',
         'auth.continueWithGoogle': 'Continue with Google',
-        'auth.sellerAccount': 'seller',
 
         // Thank you
         'thankyou.orderSuccess': 'Order successful',
@@ -152,9 +143,6 @@ export const translations = {
         'thankyou.downloadAsset': 'Download asset',
 
         // Footer
-        'footer.becomeSeller': 'Become a seller',
-        'footer.becomeSellerDesc': "If you'd like to sell high-quality digital products, you can do so in minutes.",
-        'footer.getStarted': 'Get started',
         'footer.terms': 'Terms',
         'footer.privacy': 'Privacy Policy',
         'footer.cookies': 'Cookie Policy',

@@ -1,32 +1,12 @@
-import type { Access, CollectionConfig } from 'payload'
-import type { User } from '../payload-types'
-
-const isAdminOrHasAccessToImages =
-  (): Access =>
-    async ({ req }) => {
-      const user = req.user as unknown as User | undefined
-      if (!user) return false
-      if (user.role === 'admin') return true
-      return { user: { equals: req.user?.id } }
-    }
+import type { CollectionConfig } from 'payload'
 
 export const Media: CollectionConfig = {
   slug: 'media',
-  hooks: {
-    beforeChange: [
-      ({ req, data }) => {
-        return { ...data, user: req.user?.id }
-      },
-    ],
-  },
   access: {
-    read: async ({ req }) => {
-      const referer = req.headers.get('referer')
-      if (!req.user || !referer?.includes('sell')) return true
-      return await isAdminOrHasAccessToImages()({ req })
-    },
-    delete: isAdminOrHasAccessToImages(),
-    update: isAdminOrHasAccessToImages(),
+    read: () => true,
+    create: ({ req }) => req.user?.role === 'admin',
+    update: ({ req }) => req.user?.role === 'admin',
+    delete: ({ req }) => req.user?.role === 'admin',
   },
   admin: {
     hidden: ({ user }) => user?.role !== 'admin',
@@ -45,7 +25,7 @@ export const Media: CollectionConfig = {
       name: 'user',
       type: 'relationship',
       relationTo: 'users',
-      required: true,
+      required: false,
       hasMany: false,
       admin: { condition: () => false },
     },

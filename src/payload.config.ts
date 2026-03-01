@@ -10,6 +10,7 @@ import { Categories } from './collections/Categories'
 import { tenantConfig } from './config/tenant'
 import path from 'path'
 import { fileURLToPath } from 'url'
+import sharp from 'sharp'
 
 const filename = fileURLToPath(import.meta.url)
 const dirname = path.dirname(filename)
@@ -32,6 +33,7 @@ export default buildConfig({
     url: process.env.MONGODB_URL!,
   }),
   secret: process.env.PAYLOAD_SECRET!,
+  sharp,
   typescript: {
     outputFile: path.resolve(dirname, 'payload-types.ts'),
   },

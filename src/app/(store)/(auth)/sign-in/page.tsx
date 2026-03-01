@@ -25,12 +25,8 @@ function SignIn() {
   const searchParams = useSearchParams()
   const router = useRouter()
   const { t } = useLocale()
-  const isSeller = searchParams.get('as') === 'seller'
   const origin = searchParams.get('origin')
   const error = searchParams.get('error')
-
-  const continueAsSeller = () => router.push('?as=seller')
-  const continueAsBuyer = () => router.replace('/sign-in')
   const [isPending, setIsPending] = useState(false)
 
   useEffect(() => {
@@ -71,10 +67,6 @@ function SignIn() {
         router.push(`/${origin}`)
         return
       }
-      if (isSeller) {
-        router.push('/sell')
-        return
-      }
       router.push('/')
     } finally {
       setIsPending(false)
@@ -87,7 +79,7 @@ function SignIn() {
         <div className='flex flex-col items-center space-y-2 text-center'>
           <Icons.logo className='h-20 w-20' />
           <h1 className='text-2xl font-semibold tracking-tight'>
-            {t('auth.signInTitle')} {isSeller ? t('auth.sellerAccount') : ''}
+            {t('auth.signInTitle')}
           </h1>
           <Link
             className={buttonVariants({ variant: 'link', className: 'gap-1.5' })}
@@ -142,25 +134,6 @@ function SignIn() {
               </Button>
             </div>
           </form>
-
-          <div className='relative'>
-            <div aria-hidden='true' className='absolute inset-0 flex items-center'>
-              <span className='w-full border-t' />
-            </div>
-            <div className='relative flex justify-center text-xs uppercase'>
-              <span className='bg-background px-2 text-muted-foreground'>{t('auth.or')}</span>
-            </div>
-          </div>
-
-          {isSeller ? (
-            <Button onClick={continueAsBuyer} variant='secondary' disabled={isPending}>
-              {t('auth.continueAsCustomer')}
-            </Button>
-          ) : (
-            <Button onClick={continueAsSeller} variant='secondary' disabled={isPending}>
-              {t('auth.continueAsSeller')}
-            </Button>
-          )}
         </div>
       </div>
     </div>
