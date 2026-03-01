@@ -1,25 +1,21 @@
-import {
-  AfterChangeHook,
-  BeforeChangeHook,
-} from 'payload/dist/collections/config/types'
-import { PRODUCT_CATEGORIES } from '../../config'
-import { Access, CollectionConfig } from 'payload/types'
-import { Product, User } from '../../payload-types'
+import type {
+  Access,
+  CollectionConfig,
+  CollectionAfterChangeHook,
+  CollectionBeforeChangeHook,
+} from 'payload'
+import { PRODUCT_CATEGORIES } from '../../config/index'
+import type { Product, User } from '../../payload-types'
 import { stripe } from '../../lib/stripe'
+import { tenantConfig } from '../../config/tenant'
 
-const addUser: BeforeChangeHook<Product> = async ({
-  req,
-  data,
-}) => {
+const addUser: CollectionBeforeChangeHook<Product> = async ({ req, data }) => {
   const user = req.user
-
-  return { ...data, user: user.id }
+  return { ...data, user: user?.id }
 }
 
-const syncUser: AfterChangeHook<Product> = async ({
-  req,
-  doc,
-}) => {
+const syncUser: CollectionAfterChangeHook<Product> = async ({ req, doc }) => {
+  if (!req.user) return
   const fullUser = await req.payload.findByID({
     collection: 'users',
     id: req.user.id,
@@ -27,62 +23,45 @@ const syncUser: AfterChangeHook<Product> = async ({
 
   if (fullUser && typeof fullUser === 'object') {
     const { products } = fullUser
-
     const allIDs = [
       ...(products?.map((product) =>
         typeof product === 'object' ? product.id : product
       ) || []),
     ]
-
-    const createdProductIDs = allIDs.filter(
-      (id, index) => allIDs.indexOf(id) === index
-    )
-
+    const createdProductIDs = [...new Set(allIDs)]
     const dataToUpdate = [...createdProductIDs, doc.id]
 
     await req.payload.update({
       collection: 'users',
       id: fullUser.id,
-      data: {
-        products: dataToUpdate,
-      },
+      data: { products: dataToUpdate },
     })
   }
 }
 
 const isAdminOrHasAccess =
   (): Access =>
-  ({ req: { user: _user } }) => {
-    const user = _user as User | undefined
+    ({ req: { user: _user } }) => {
+      const user = _user as User | undefined
+      if (!user) return false
+      if (user.role === 'admin') return true
 
-    if (!user) return false
-    if (user.role === 'admin') return true
+      const userProductIDs = (user.products || []).reduce<Array<string>>(
+        (acc, product) => {
+          if (!product) return acc
+          if (typeof product === 'string') acc.push(product)
+          else acc.push(product.id)
+          return acc
+        },
+        []
+      )
 
-    const userProductIDs = (user.products || []).reduce<
-      Array<string>
-    >((acc, product) => {
-      if (!product) return acc
-      if (typeof product === 'string') {
-        acc.push(product)
-      } else {
-        acc.push(product.id)
-      }
-
-      return acc
-    }, [])
-
-    return {
-      id: {
-        in: userProductIDs,
-      },
+      return { id: { in: userProductIDs } }
     }
-  }
 
 export const Products: CollectionConfig = {
   slug: 'products',
-  admin: {
-    useAsTitle: 'name',
-  },
+  admin: { useAsTitle: 'name' },
   access: {
     read: isAdminOrHasAccess(),
     update: isAdminOrHasAccess(),
@@ -96,38 +75,32 @@ export const Products: CollectionConfig = {
         if (args.operation === 'create') {
           const data = args.data as Product
 
-          const createdProduct =
-            await stripe.products.create({
-              name: data.name,
-              default_price_data: {
-                currency: 'USD',
-                unit_amount: Math.round(data.price * 100),
-              },
-            })
+          const createdProduct = await stripe.products.create({
+            name: data.name,
+            default_price_data: {
+              currency: tenantConfig.currency.toLowerCase(),
+              unit_amount: Math.round(data.price * 100),
+            },
+          })
 
-          const updated: Product = {
+          return {
             ...data,
             stripeId: createdProduct.id,
             priceId: createdProduct.default_price as string,
           }
-
-          return updated
         } else if (args.operation === 'update') {
           const data = args.data as Product
 
-          const updatedProduct =
-            await stripe.products.update(data.stripeId!, {
-              name: data.name,
-              default_price: data.priceId!,
-            })
+          const updatedProduct = await stripe.products.update(data.stripeId!, {
+            name: data.name,
+            default_price: data.priceId!,
+          })
 
-          const updated: Product = {
+          return {
             ...data,
             stripeId: updatedProduct.id,
             priceId: updatedProduct.default_price as string,
           }
-
-          return updated
         }
       },
     ],
@@ -139,9 +112,7 @@ export const Products: CollectionConfig = {
       relationTo: 'users',
       required: true,
       hasMany: false,
-      admin: {
-        condition: () => false,
-      },
+      admin: { condition: () => false },
     },
     {
       name: 'name',
@@ -156,7 +127,7 @@ export const Products: CollectionConfig = {
     },
     {
       name: 'price',
-      label: 'Price in USD',
+      label: `Price in ${tenantConfig.currency}`,
       min: 0,
       max: 1000,
       type: 'number',
@@ -166,9 +137,7 @@ export const Products: CollectionConfig = {
       name: 'category',
       label: 'Category',
       type: 'select',
-      options: PRODUCT_CATEGORIES.map(
-        ({ label, value }) => ({ label, value })
-      ),
+      options: PRODUCT_CATEGORIES.map(({ label, value }) => ({ label, value })),
       required: true,
     },
     {
@@ -185,48 +154,27 @@ export const Products: CollectionConfig = {
       type: 'select',
       defaultValue: 'pending',
       access: {
-        create: ({ req }) => req.user.role === 'admin',
-        read: ({ req }) => req.user.role === 'admin',
-        update: ({ req }) => req.user.role === 'admin',
+        create: ({ req }) => req.user?.role === 'admin',
+        read: ({ req }) => req.user?.role === 'admin',
+        update: ({ req }) => req.user?.role === 'admin',
       },
       options: [
-        {
-          label: 'Pending verification',
-          value: 'pending',
-        },
-        {
-          label: 'Approved',
-          value: 'approved',
-        },
-        {
-          label: 'Denied',
-          value: 'denied',
-        },
+        { label: 'Pending verification', value: 'pending' },
+        { label: 'Approved', value: 'approved' },
+        { label: 'Denied', value: 'denied' },
       ],
     },
     {
       name: 'priceId',
-      access: {
-        create: () => false,
-        read: () => false,
-        update: () => false,
-      },
+      access: { create: () => false, read: () => false, update: () => false },
       type: 'text',
-      admin: {
-        hidden: true,
-      },
+      admin: { hidden: true },
     },
     {
       name: 'stripeId',
-      access: {
-        create: () => false,
-        read: () => false,
-        update: () => false,
-      },
+      access: { create: () => false, read: () => false, update: () => false },
       type: 'text',
-      admin: {
-        hidden: true,
-      },
+      admin: { hidden: true },
     },
     {
       name: 'images',
@@ -235,10 +183,7 @@ export const Products: CollectionConfig = {
       minRows: 1,
       maxRows: 4,
       required: true,
-      labels: {
-        singular: 'Image',
-        plural: 'Images',
-      },
+      labels: { singular: 'Image', plural: 'Images' },
       fields: [
         {
           name: 'image',

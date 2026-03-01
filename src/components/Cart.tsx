@@ -18,9 +18,14 @@ import { useCart } from '@/hooks/use-cart'
 import { ScrollArea } from './ui/scroll-area'
 import CartItem from './CartItem'
 import { useEffect, useState } from 'react'
+import { trpc } from '@/trpc/client'
+
+import { useLocale } from '@/hooks/use-locale'
 
 const Cart = () => {
   const { items } = useCart()
+  const { data: checkoutConfig } = trpc.checkoutConfig.useQuery()
+  const { t } = useLocale()
   const itemCount = items.length
 
   const [isMounted, setIsMounted] = useState<boolean>(false)
@@ -34,7 +39,7 @@ const Cart = () => {
     0
   )
 
-  const fee = 1
+  const fee = (checkoutConfig?.transactionFeeCents ?? 0) / 100
 
   return (
     <Sheet>
@@ -49,7 +54,7 @@ const Cart = () => {
       </SheetTrigger>
       <SheetContent className='flex w-full flex-col pr-0 sm:max-w-lg'>
         <SheetHeader className='space-y-2.5 pr-6'>
-          <SheetTitle>Cart ({itemCount})</SheetTitle>
+          <SheetTitle>{t('cart.title')} ({itemCount})</SheetTitle>
         </SheetHeader>
         {itemCount > 0 ? (
           <>
@@ -67,17 +72,17 @@ const Cart = () => {
               <Separator />
               <div className='space-y-1.5 text-sm'>
                 <div className='flex'>
-                  <span className='flex-1'>Shipping</span>
-                  <span>Free</span>
+                  <span className='flex-1'>{t('cart.subtotal')}</span>
+                  <span>{formatPrice(cartTotal)}</span>
                 </div>
                 <div className='flex'>
                   <span className='flex-1'>
-                    Transaction Fee
+                    {t('cart.transactionFee')}
                   </span>
                   <span>{formatPrice(fee)}</span>
                 </div>
                 <div className='flex'>
-                  <span className='flex-1'>Total</span>
+                  <span className='flex-1'>{t('cart.total')}</span>
                   <span>
                     {formatPrice(cartTotal + fee)}
                   </span>
@@ -91,7 +96,7 @@ const Cart = () => {
                     className={buttonVariants({
                       className: 'w-full',
                     })}>
-                    Continue to Checkout
+                    {t('cart.checkout')}
                   </Link>
                 </SheetTrigger>
               </SheetFooter>
@@ -109,7 +114,7 @@ const Cart = () => {
               />
             </div>
             <div className='text-xl font-semibold'>
-              Your cart is empty
+              {t('cart.empty')}
             </div>
             <SheetTrigger asChild>
               <Link
@@ -120,7 +125,7 @@ const Cart = () => {
                   className:
                     'text-sm text-muted-foreground',
                 })}>
-                Add items to your cart to checkout
+                {t('cart.emptyDesc')}
               </Link>
             </SheetTrigger>
           </div>

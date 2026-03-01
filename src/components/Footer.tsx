@@ -4,9 +4,12 @@ import { usePathname } from 'next/navigation'
 import MaxWidthWrapper from './MaxWidthWrapper'
 import { Icons } from './Icons'
 import Link from 'next/link'
+import { useLocale } from '@/hooks/use-locale'
+import { tenantConfig } from '@/config/tenant'
 
 const Footer = () => {
   const pathname = usePathname()
+  const { t } = useLocale()
   const pathsToMinimize = [
     '/verify-email',
     '/sign-up',
@@ -37,16 +40,14 @@ const Footer = () => {
 
                 <div className='text-center relative mx-auto max-w-sm'>
                   <h3 className='font-semibold text-gray-900'>
-                    Become a seller
+                    {t('footer.becomeSeller')}
                   </h3>
                   <p className='mt-2 text-sm text-muted-foreground'>
-                    If you&apos;d like to sell high-quality
-                    digital products, you can do so in
-                    minutes.{' '}
+                    {t('footer.becomeSellerDesc')}{' '}
                     <Link
                       href='/sign-in?as=seller'
                       className='whitespace-nowrap font-medium text-black hover:text-zinc-900'>
-                      Get started &rarr;
+                      {t('footer.getStarted')} &rarr;
                     </Link>
                   </p>
                 </div>
@@ -58,27 +59,36 @@ const Footer = () => {
         <div className='py-10 md:flex md:items-center md:justify-between'>
           <div className='text-center md:text-left'>
             <p className='text-sm text-muted-foreground'>
-              &copy; {new Date().getFullYear()} All Rights
-              Reserved
+              &copy; {new Date().getFullYear()} {tenantConfig.copyrightOwner}. All Rights Reserved.
+              {tenantConfig.copyrightUrl && (
+                <>{' '}Built by{' '}
+                  <Link
+                    href={tenantConfig.copyrightUrl}
+                    target='_blank'
+                    className='font-medium text-gray-900 hover:text-pink-600'>
+                    {tenantConfig.copyrightUrl.replace(/^https?:\/\//, '')}
+                  </Link>
+                </>
+              )}
             </p>
           </div>
 
           <div className='mt-4 flex items-center justify-center md:mt-0'>
             <div className='flex space-x-8'>
               <Link
-                href='#'
+                href='/terms'
                 className='text-sm text-muted-foreground hover:text-gray-600'>
-                Terms
+                {t('footer.terms')}
               </Link>
               <Link
-                href='#'
+                href='/privacy'
                 className='text-sm text-muted-foreground hover:text-gray-600'>
-                Privacy Policy
+                {t('footer.privacy')}
               </Link>
               <Link
-                href='#'
+                href='/cookies'
                 className='text-sm text-muted-foreground hover:text-gray-600'>
-                Cookie Policy
+                {t('footer.cookies')}
               </Link>
             </div>
           </div>

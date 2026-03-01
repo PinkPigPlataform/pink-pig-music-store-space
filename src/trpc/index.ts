@@ -1,13 +1,21 @@
 import { z } from 'zod'
-import { authRouter } from './auth-router'
+import { authRouter } from './routers/auth'
 import { publicProcedure, router } from './trpc'
 import { QueryValidator } from '../lib/validators/query-validator'
-import { getPayloadClient } from '../get-payload'
-import { paymentRouter } from './payment-router'
+import { paymentRouter } from './routers/payment'
+import { getTransactionFeeCents } from '@/lib/billing'
 
 export const appRouter = router({
   auth: authRouter,
   payment: paymentRouter,
+
+  checkoutConfig: publicProcedure.query(async () => {
+    const transactionFeeCents = await getTransactionFeeCents()
+
+    return {
+      transactionFeeCents,
+    }
+  }),
 
   getInfiniteProducts: publicProcedure
     .input(
@@ -17,35 +25,22 @@ export const appRouter = router({
         query: QueryValidator,
       })
     )
-    .query(async ({ input }) => {
+    .query(async ({ input, ctx }) => {
       const { query, cursor } = input
       const { sort, limit, ...queryOpts } = query
+      const { payload } = ctx
 
-      const payload = await getPayloadClient()
-
-      const parsedQueryOpts: Record<
-        string,
-        { equals: string }
-      > = {}
-
+      const parsedQueryOpts: Record<string, { equals: string }> = {}
       Object.entries(queryOpts).forEach(([key, value]) => {
-        parsedQueryOpts[key] = {
-          equals: value,
-        }
+        if (value) parsedQueryOpts[key] = { equals: value }
       })
 
       const page = cursor || 1
 
-      const {
-        docs: items,
-        hasNextPage,
-        nextPage,
-      } = await payload.find({
+      const { docs: items, hasNextPage, nextPage } = await payload.find({
         collection: 'products',
         where: {
-          approvedForSale: {
-            equals: 'approved',
-          },
+          approvedForSale: { equals: 'approved' },
           ...parsedQueryOpts,
         },
         sort,

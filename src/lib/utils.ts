@@ -1,6 +1,7 @@
 import { type ClassValue, clsx } from 'clsx'
-import { Metadata } from 'next'
 import { twMerge } from 'tailwind-merge'
+import type { Metadata } from 'next'
+import { tenantConfig } from '@/config/tenant'
 
 export function cn(...inputs: ClassValue[]) {
   return twMerge(clsx(inputs))
@@ -13,11 +14,8 @@ export function formatPrice(
     notation?: Intl.NumberFormatOptions['notation']
   } = {}
 ) {
-  const { currency = 'USD', notation = 'compact' } = options
-
-  const numericPrice =
-    typeof price === 'string' ? parseFloat(price) : price
-
+  const { currency = tenantConfig.currency, notation = 'compact' } = options
+  const numericPrice = typeof price === 'string' ? parseFloat(price) : price
   return new Intl.NumberFormat('en-US', {
     style: 'currency',
     currency,
@@ -27,9 +25,9 @@ export function formatPrice(
 }
 
 export function constructMetadata({
-  title = 'Pink Pig - the marketplace for digital assets',
-  description = 'Pink Pig  is an open-source marketplace for high-quality digital goods.',
-  image = '/thumbnail.png',
+  title = `${tenantConfig.storeName} - the marketplace for digital assets`,
+  description = tenantConfig.storeDescription,
+  image = '/thumbnail.jpg',
   icons = '/favicon.ico',
   noIndex = false,
 }: {
@@ -42,29 +40,16 @@ export function constructMetadata({
   return {
     title,
     description,
-    openGraph: {
-      title,
-      description,
-      images: [
-        {
-          url: image,
-        },
-      ],
-    },
+    metadataBase: new URL(process.env.NEXT_PUBLIC_SERVER_URL || 'http://localhost:3000'),
+    openGraph: { title, description, images: [{ url: image }] },
     twitter: {
       card: 'summary_large_image',
       title,
       description,
       images: [image],
-      creator: '@pinkpig',
+      creator: tenantConfig.twitterHandle || undefined,
     },
     icons,
-    metadataBase: new URL('https://pinkpig-ecommerce.up.railway.app'),
-    ...(noIndex && {
-      robots: {
-        index: false,
-        follow: false,
-      },
-    }),
+    ...(noIndex && { robots: { index: false, follow: false } }),
   }
 }

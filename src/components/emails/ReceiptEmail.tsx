@@ -18,6 +18,7 @@ import {
 } from '@react-email/components'
 
 import * as React from 'react'
+import { tenantConfig } from '../../config/tenant'
 
 import { format } from 'date-fns'
 
@@ -40,7 +41,7 @@ export const ReceiptEmail = ({
   return (
     <Html>
       <Head />
-      <Preview>Your Pink Ping Space Receipt</Preview>
+      <Preview>Your {tenantConfig.storeName} Receipt</Preview>
 
       <Body style={main}>
         <Container style={container}>
@@ -50,7 +51,7 @@ export const ReceiptEmail = ({
                 src={`${process.env.NEXT_PUBLIC_SERVER_URL}/pinkpig-email-sent.png`}
                 width='100'
                 height='100'
-                alt='Pink Pig Space'
+                alt={`${tenantConfig.storeName}`}
               />
             </Column>
 
@@ -188,7 +189,7 @@ export const ReceiptEmail = ({
             <Link href='#'>Privacy Policy </Link>
           </Text>
           <Text style={footerCopyright}>
-            Copyright © 2023 Pink Pig Ecommerce Inc. <br />{' '}
+            Copyright &copy; {new Date().getFullYear()} {tenantConfig.storeName}. <br />{' '}
             <Link href='#'>All rights reserved</Link>
           </Text>
         </Container>

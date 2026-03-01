@@ -1,42 +1,38 @@
-import { buildConfig } from 'payload/config'
-import { webpackBundler } from '@payloadcms/bundler-webpack'
+import { buildConfig } from 'payload'
 import { mongooseAdapter } from '@payloadcms/db-mongodb'
-import { slateEditor } from '@payloadcms/richtext-slate'
-import path from 'path'
+import { resendAdapter } from '@payloadcms/email-resend'
 import { Users } from './collections/Users'
-import dotenv from 'dotenv'
 import { Products } from './collections/Products/Products'
 import { Media } from './collections/Media'
 import { ProductFiles } from './collections/ProductFile'
 import { Orders } from './collections/Orders'
+import { Categories } from './collections/Categories'
+import { tenantConfig } from './config/tenant'
+import path from 'path'
+import { fileURLToPath } from 'url'
 
-dotenv.config({
-  path: path.resolve(__dirname, '../.env'),
-})
+const filename = fileURLToPath(import.meta.url)
+const dirname = path.dirname(filename)
 
 export default buildConfig({
   serverURL: process.env.NEXT_PUBLIC_SERVER_URL || '',
-  collections: [Users, Products, Media, ProductFiles, Orders], 
-  routes: {
-    admin: '/sell',
-  },
+  collections: [Users, Products, Media, ProductFiles, Orders, Categories],
   admin: {
     user: 'users',
-    bundler: webpackBundler(),
     meta: {
-      titleSuffix: '- PinkPig',
-      favicon: '/favicon.ico',
-      ogImage: '/thumbnail.jpg',
+      titleSuffix: `- ${tenantConfig.storeName}`,
     },
   },
-  rateLimit: {
-    max: 2000,
-  },
-  editor: slateEditor({}),
+  email: resendAdapter({
+    defaultFromAddress: process.env.RESEND_FROM_EMAIL ?? 'noreply@example.com',
+    defaultFromName: tenantConfig.storeName,
+    apiKey: process.env.RESEND_API_KEY || '',
+  }),
   db: mongooseAdapter({
     url: process.env.MONGODB_URL!,
   }),
+  secret: process.env.PAYLOAD_SECRET!,
   typescript: {
-    outputFile: path.resolve(__dirname, 'payload-types.ts'),
+    outputFile: path.resolve(dirname, 'payload-types.ts'),
   },
 })

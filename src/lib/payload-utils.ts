@@ -1,24 +1,20 @@
-import { User } from '../payload-types'
-import { ReadonlyRequestCookies } from 'next/dist/server/web/spec-extension/adapters/request-cookies'
-import { NextRequest } from 'next/server'
+import { getPayloadClient } from './payload'
+import { cookies as nextCookies } from 'next/headers'
 
-export const getServerSideUser = async (
-  cookies: NextRequest['cookies'] | ReadonlyRequestCookies
-) => {
-  const token = cookies.get('payload-token')?.value
+export const getServerSideUser = async () => {
+  const cookieStore = await nextCookies()
+  const token = cookieStore.get('payload-token')?.value
 
-  const meRes = await fetch(
-    `${process.env.NEXT_PUBLIC_SERVER_URL}/api/users/me`,
-    {
-      headers: {
-        Authorization: `JWT ${token}`,
-      },
-    }
-  )
+  if (!token) return { user: null }
 
-  const { user } = (await meRes.json()) as {
-    user: User | null
+  const payload = await getPayloadClient()
+
+  try {
+    const { user } = await payload.auth({
+      headers: new Headers({ Authorization: `JWT ${token}` }),
+    })
+    return { user }
+  } catch {
+    return { user: null }
   }
-
-  return { user }
 }

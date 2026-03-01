@@ -1,4 +1,4 @@
-import { z } from "zod"
+import { z } from 'zod'
 
 export const AuthCredentialsValidator = z.object({
   email: z.string().email(),
@@ -7,6 +7,4 @@ export const AuthCredentialsValidator = z.object({
   }),
 })
 
-export type TAuthCredentialsValidator = z.infer<
-  typeof AuthCredentialsValidator
->
+export type TAuthCredentialsValidator = z.infer<typeof AuthCredentialsValidator>

@@ -70,6 +70,18 @@ const VerifyEmail = ({ token }: VerifyEmailProps) => {
       </div>
     )
   }
+
+  return (
+    <div className='flex flex-col items-center gap-2'>
+      <Loader2 className='animate-spin h-8 w-8 text-zinc-300' />
+      <h3 className='font-semibold text-xl'>
+        Processing...
+      </h3>
+      <p className='text-muted-foreground text-sm'>
+        Please wait a moment.
+      </p>
+    </div>
+  )
 }
 
 export default VerifyEmail

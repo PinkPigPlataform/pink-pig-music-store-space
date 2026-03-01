@@ -11,9 +11,11 @@ import {
 } from './ui/dropdown-menu'
 import Link from 'next/link'
 import { useAuth } from '@/hooks/use-auth'
+import { useLocale } from '@/hooks/use-locale'
 
 const UserAccountNav = ({ user }: { user: User }) => {
   const { signOut } = useAuth()
+  const { t } = useLocale()
 
   return (
     <DropdownMenu>
@@ -24,7 +26,7 @@ const UserAccountNav = ({ user }: { user: User }) => {
           variant='ghost'
           size='sm'
           className='relative'>
-          My account
+          {t('nav.myAccount')}
         </Button>
       </DropdownMenuTrigger>
 
@@ -42,13 +44,13 @@ const UserAccountNav = ({ user }: { user: User }) => {
         <DropdownMenuSeparator />
 
         <DropdownMenuItem asChild>
-          <Link href='/sell'>Seller Dashboard</Link>
+          <Link href='/sell'>{t('nav.sellerDashboard')}</Link>
         </DropdownMenuItem>
 
         <DropdownMenuItem
           onClick={signOut}
           className='cursor-pointer'>
-          Log out
+          {t('nav.logOut')}
         </DropdownMenuItem>
       </DropdownMenuContent>
     </DropdownMenu>

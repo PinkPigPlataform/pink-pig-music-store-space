@@ -13,6 +13,7 @@ import {
 } from '@react-email/components'
 
 import * as React from "react"
+import { tenantConfig } from '../../config/tenant'
 
 interface EmailTemplateProps {
   actionLabel: string
@@ -37,12 +38,12 @@ export const EmailTemplate = ({
             src={`${process.env.NEXT_PUBLIC_SERVER_URL}/pinkpig-newsletter-sign-up.png`}
             width='150'
             height='150'
-            alt='Pink Pig Ecommerce'
+            alt={`${tenantConfig.storeName} Logo`}
             style={logo}
           />
           <Text style={paragraph}>Hi there,</Text>
           <Text style={paragraph}>
-            Welcome to Pink Pig Ecommerce, the marketplace for
+            Welcome to {tenantConfig.storeName}, the marketplace for
             high quality digital goods. Use the button below
             to {actionLabel}.
           </Text>
@@ -54,7 +55,7 @@ export const EmailTemplate = ({
           <Text style={paragraph}>
             Best,
             <br />
-            The Pink Pig team
+            The {tenantConfig.storeName} team
           </Text>
           <Hr style={hr} />
           <Text style={footer}>

@@ -48,8 +48,9 @@ const CartItem = ({ product }: { product: Product }) => {
             <div className='mt-4 text-xs text-muted-foreground'>
               <button
                 onClick={() => removeItem(product.id)}
-                className='flex items-center gap-0.5'>
-                <X className='w-3 h-4' />
+                className='flex items-center gap-0.5'
+                aria-label={`Remover ${product.name} do carrinho`}>
+                <X aria-hidden='true' className='w-3 h-4' />
                 Remove
               </button>
             </div>

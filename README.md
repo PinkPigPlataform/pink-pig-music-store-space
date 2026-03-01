@@ -1,113 +1,66 @@
-# Pink Pig Musical Store - A Modern Fullstack E-Commerce for Digital Products
+# White-label Digital Marketplace
 
-Built with the Next.js 14 App Router, tRPC, TypeScript, Payload & Tailwind
+A white-label digital marketplace built with **Next.js 15 App Router + Payload CMS v3**.  
+Every aspect of branding — name, color, currency, and product categories — is configurable via environment variables with no code changes required.
 
-![Project Image](https://github.com/toticavalcanti/pink-pig-ecommerce/blob/master/public/thumbnail.jpg)
+📖 **[Full Setup Guide → SETUP.md](./SETUP.md)**
 
-# GitHub Repository Descriptions
+## Stack
 
-## Short Description (160 characters max)
-```
-🎵 Modern digital music store built with Next.js 14, TypeScript & Stripe. Sell music methods, playalongs, AI books & digital content with ease.
-```
+- **Next.js 15** — App Router nativo, sem Express
+- **Payload CMS v3** — headless CMS integrado nativamente ao Next.js
+- **MongoDB Atlas** — banco de dados
+- **Stripe** — pagamentos
+- **Resend** — emails transacionais
+- **tRPC v11** — API type-safe
+- **Tailwind CSS** — design system
 
-## Alternative Short Descriptions
+## Quick Start
 
-### Option 1 - Technical Focus
-```
-Full-stack music marketplace with Next.js 14, Payload CMS, Stripe payments. Perfect for selling digital music content, methods & educational materials.
-```
-
-### Option 2 - Business Focus  
-```
-🐷🎵 Pink Pig Music Store - Complete e-commerce solution for musicians selling digital content. Built with Next.js, TypeScript & modern web technologies.
-```
-
-### Option 3 - Feature Focus
-```
-Digital music store with instant delivery, secure payments, and beautiful UI. Sell music books, methods, playalongs & AI content effortlessly.
+```bash
+npm install
+cp .env.example .env.local   # preencha as variáveis obrigatórias
+npm run dev
 ```
 
-## Full README Description
+- **Loja**: http://localhost:3000
+- **Admin CMS**: http://localhost:3000/admin
 
-```markdown
-# 🎵 Pink Pig Music Store
+Para instruções completas de configuração, deploy e webhook do Stripe, veja [SETUP.md](./SETUP.md).
 
-A modern, full-stack e-commerce platform specifically designed for selling digital music content and educational materials.
+## White-label
 
-## ✨ Features
+Customize o marketplace sem alterar código:
 
-- **🎼 Music-Focused Categories**: Methods, Playalongs, Music Books, AI Content
-- **💳 Secure Payments**: Stripe integration with instant digital delivery
-- **📱 Responsive Design**: Beautiful UI that works on all devices  
-- **🔐 Secure Authentication**: JWT-based user authentication with email verification
-- **📧 Automated Emails**: Purchase confirmations and download links
-- **⚡ Instant Delivery**: Automatic file delivery after successful payment
-- **🎨 Modern UI**: Built with Tailwind CSS and shadcn/ui components
-- **📊 Admin Dashboard**: Powered by Payload CMS for easy content management
-
-## 🛠️ Tech Stack
-
-- **Frontend**: Next.js 14 (App Router), TypeScript, Tailwind CSS
-- **Backend**: Express.js, Payload CMS  
-- **Database**: MongoDB
-- **Payments**: Stripe
-- **Authentication**: JWT with Payload Auth
-- **Email**: Resend + React Email
-- **File Storage**: Local/Cloud storage for digital products
-- **Deployment**: Vercel-ready
-
-## 🚀 Perfect For
-
-- Music teachers selling digital methods
-- Musicians offering playalongs and backing tracks
-- Authors selling music-related ebooks and AI content
-- Anyone wanting to sell digital educational content
-
-## 🎯 Use Cases
-
-- **Music Methods**: Piano, guitar, theory books in PDF format
-- **Playalongs**: MP3/WAV backing tracks for practice
-- **Video Courses**: Music lessons and tutorials  
-- **AI Content**: Books about AI art generation and prompts
-- **Sheet Music**: Digital scores and arrangements
-
-## 💰 Business Model
-
-- Direct sales platform (not marketplace)
-- Fixed transaction fee structure
-- Instant digital product delivery
-- Automated email receipts and download links
-- Complete order management system
-
-Built with ❤️ for musicians and digital content creators.
+```env
+NEXT_PUBLIC_STORE_NAME="Acme Store"
+NEXT_PUBLIC_CURRENCY="EUR"
+NEXT_PUBLIC_PRIMARY_COLOR="#6366f1"
+NEXT_PUBLIC_COPYRIGHT_OWNER="Acme Corp"
+NEXT_PUBLIC_COPYRIGHT_URL="https://acme.com"
+NEXT_PUBLIC_PRODUCT_CATEGORIES='[{"label":"Templates","value":"templates","featured":[]}]'
 ```
 
-## Topics/Tags for GitHub
+## Estrutura do projeto
 
 ```
-nextjs
-typescript  
-ecommerce
-music
-digital-store
-stripe
-payload-cms
-tailwindcss
-react
-mongodb
-digital-products
-music-education
-ai-content
-full-stack
-vercel
+src/
+├── app/
+│   ├── (payload)/           ← Payload CMS (admin + REST API)
+│   ├── (store)/             ← Loja pública
+│   │   ├── product/[productId]/
+│   │   ├── products/
+│   │   ├── cart/
+│   │   └── thank-you/
+│   └── api/
+│       ├── trpc/[trpc]/     ← tRPC Route Handler
+│       └── webhooks/stripe/ ← Webhook Stripe nativo
+├── collections/             ← Coleções do Payload CMS
+├── components/
+├── config/
+│   ├── tenant.ts            ← Fonte da verdade para configuração do tenant
+│   └── index.ts             ← Re-exports PRODUCT_CATEGORIES
+├── hooks/
+├── lib/
+└── payload.config.ts        ← Config Payload v3 nativa
 ```
-
-## Repository Settings
-
-### Visibility: Public ✅
-### Include in search: Yes ✅  
-### Discussions: Enable ✅
-### Wiki: Enable ✅
-### Issues: Enable ✅
-### Projects: Enable ✅

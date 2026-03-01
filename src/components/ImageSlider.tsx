@@ -12,9 +12,13 @@ import { ChevronLeft, ChevronRight } from 'lucide-react'
 
 interface ImageSliderProps {
   urls: string[]
+  imagePriority?: boolean
 }
 
-const ImageSlider = ({ urls }: ImageSliderProps) => {
+const ImageSlider = ({
+  urls,
+  imagePriority = false,
+}: ImageSliderProps) => {
   const [swiper, setSwiper] = useState<null | SwiperType>(
     null
   )
@@ -26,13 +30,25 @@ const ImageSlider = ({ urls }: ImageSliderProps) => {
   })
 
   useEffect(() => {
-    swiper?.on('slideChange', ({ activeIndex }) => {
+    if (!swiper) return
+
+    const handleSlideChange = ({
+      activeIndex,
+    }: {
+      activeIndex: number
+    }) => {
       setActiveIndex(activeIndex)
       setSlideConfig({
         isBeginning: activeIndex === 0,
         isEnd: activeIndex === (urls.length ?? 0) - 1,
       })
-    })
+    }
+
+    swiper.on('slideChange', handleSlideChange)
+
+    return () => {
+      swiper.off('slideChange', handleSlideChange)
+    }
   }, [swiper, urls])
 
   const activeStyles =
@@ -56,8 +72,11 @@ const ImageSlider = ({ urls }: ImageSliderProps) => {
                 !slideConfig.isEnd,
             }
           )}
-          aria-label='next image'>
-          <ChevronRight className='h-4 w-4 text-zinc-700' />{' '}
+          aria-label='Próxima imagem'>
+          <ChevronRight
+            aria-hidden='true'
+            className='h-4 w-4 text-zinc-700'
+          />
         </button>
         <button
           onClick={(e) => {
@@ -69,8 +88,11 @@ const ImageSlider = ({ urls }: ImageSliderProps) => {
             'hover:bg-primary-300 text-primary-800 opacity-100':
               !slideConfig.isBeginning,
           })}
-          aria-label='previous image'>
-          <ChevronLeft className='h-4 w-4 text-zinc-700' />{' '}
+          aria-label='Imagem anterior'>
+          <ChevronLeft
+            aria-hidden='true'
+            className='h-4 w-4 text-zinc-700'
+          />
         </button>
       </div>
 
@@ -91,7 +113,9 @@ const ImageSlider = ({ urls }: ImageSliderProps) => {
             className='-z-10 relative h-full w-full'>
             <Image
               fill
-              loading='eager'
+              priority={imagePriority && i === 0}
+              loading={imagePriority && i === 0 ? 'eager' : 'lazy'}
+              sizes='(max-width: 640px) 50vw, (max-width: 1024px) 33vw, 25vw'
               className='-z-10 h-full w-full object-cover object-center'
               src={url}
               alt='Product image'

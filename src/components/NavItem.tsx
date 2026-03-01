@@ -33,6 +33,7 @@ const NavItem = ({
           variant={isOpen ? 'secondary' : 'ghost'}>
           {category.label}
           <ChevronDown
+            aria-hidden='true'
             className={cn(
               'h-4 w-4 transition-all text-muted-foreground',
               {

@@ -37,7 +37,8 @@ const MobileNav = () => {
       <button
         type='button'
         onClick={() => setIsOpen(true)}
-        className='lg:hidden relative -m-2 inline-flex items-center justify-center rounded-md p-2 text-gray-400'>
+        className='lg:hidden relative -m-2 inline-flex items-center justify-center rounded-md p-2 text-gray-400'
+        aria-label='Abrir menu de navegação'>
         <Menu className='h-6 w-6' aria-hidden='true' />
       </button>
     )
@@ -55,7 +56,8 @@ const MobileNav = () => {
               <button
                 type='button'
                 onClick={() => setIsOpen(false)}
-                className='relative -m-2 inline-flex items-center justify-center rounded-md p-2 text-gray-400'>
+                className='relative -m-2 inline-flex items-center justify-center rounded-md p-2 text-gray-400'
+                aria-label='Fechar menu de navegação'>
                 <X className='h-6 w-6' aria-hidden='true' />
               </button>
             </div>

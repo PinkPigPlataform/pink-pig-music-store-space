@@ -1,10 +1,7 @@
-'use client'
-
 import { Product } from '@/payload-types'
-import { useEffect, useState } from 'react'
 import { Skeleton } from './ui/skeleton'
 import Link from 'next/link'
-import { cn, formatPrice } from '@/lib/utils'
+import { formatPrice } from '@/lib/utils'
 import { PRODUCT_CATEGORIES } from '@/config'
 import ImageSlider from './ImageSlider'
 
@@ -17,17 +14,7 @@ const ProductListing = ({
   product,
   index,
 }: ProductListingProps) => {
-  const [isVisible, setIsVisible] = useState<boolean>(false)
-
-  useEffect(() => {
-    const timer = setTimeout(() => {
-      setIsVisible(true)
-    }, index * 75)
-
-    return () => clearTimeout(timer)
-  }, [index])
-
-  if (!product || !isVisible) return <ProductPlaceholder />
+  if (!product) return <ProductPlaceholder />
 
   const label = PRODUCT_CATEGORIES.find(
     ({ value }) => value === product.category
@@ -39,18 +26,16 @@ const ProductListing = ({
     )
     .filter(Boolean) as string[]
 
-  if (isVisible && product) {
-    return (
-      <Link
-        className={cn(
-          'invisible h-full w-full cursor-pointer group/main',
-          {
-            'visible animate-in fade-in-5': isVisible,
-          }
-        )}
-        href={`/product/${product.id}`}>
-        <div className='flex flex-col w-full'>
-          <ImageSlider urls={validUrls} />
+  return (
+    <Link
+      className='h-full w-full cursor-pointer group/main animate-in fade-in-5'
+      style={{ animationDelay: `${index * 75}ms` }}
+      href={`/product/${product.id}`}>
+      <div className='flex flex-col w-full'>
+        <ImageSlider
+          urls={validUrls}
+          imagePriority={index === 0}
+        />
 
           <h3 className='mt-4 font-medium text-sm text-gray-700'>
             {product.name}
@@ -61,10 +46,9 @@ const ProductListing = ({
           <p className='mt-1 font-medium text-sm text-gray-900'>
             {formatPrice(product.price)}
           </p>
-        </div>
-      </Link>
-    )
-  }
+      </div>
+    </Link>
+  )
 }
 
 const ProductPlaceholder = () => {
