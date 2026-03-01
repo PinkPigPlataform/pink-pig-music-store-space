@@ -46,6 +46,7 @@ Then open `.env.local` and fill in the values. The minimum required set to boot:
 | `STRIPE_SECRET_KEY` | ✅ | From Stripe dashboard |
 | `STRIPE_WEBHOOK_SECRET` | ✅ | From Stripe CLI or dashboard |
 | `STRIPE_TRANSACTION_FEE_PRICE_ID` | ✅ | Stripe Price ID for $1 fee |
+| `BLOB_READ_WRITE_TOKEN` | ✅ (produção) | Token do Vercel Blob — veja seção 5 |
 
 ### White-label / Tenant Variables (all optional — have sensible defaults)
 
@@ -117,7 +118,25 @@ open http://localhost:3000/admin
 
 ---
 
-## 5. Deploy
+## 5. Vercel Blob Storage
+
+Os arquivos de upload (`media` e `product_files`) precisam de armazenamento persistente em produção — o filesystem da Vercel é efêmero. O adapter do PayloadCMS lida com isso automaticamente via **Vercel Blob**.
+
+> **Em dev local:** sem o token, os uploads continuam em disco normalmente. O adapter só ativa quando `BLOB_READ_WRITE_TOKEN` está presente.
+
+### Configurar o Vercel Blob
+
+1. No dashboard da Vercel, acesse seu projeto
+2. Clique em **Storage** na barra lateral
+3. Clique em **Create Database** → selecione **Blob**
+4. Dê um nome (ex: `minha-loja-files`) e confirme
+5. Copie o `BLOB_READ_WRITE_TOKEN` gerado
+6. Adicione como variável de ambiente no projeto Vercel (Settings → Environment Variables)
+7. Redeploy
+
+---
+
+## 6. Deploy
 
 ### Vercel (recommended)
 
@@ -135,7 +154,7 @@ open http://localhost:3000/admin
 
 ---
 
-## 6. Stripe Webhook
+## 7. Stripe Webhook
 
 ### Local Development
 
@@ -156,7 +175,7 @@ Copy the `whsec_...` value to `STRIPE_WEBHOOK_SECRET`.
 
 ---
 
-## 7. Google OAuth (optional)
+## 8. Google OAuth (optional)
 
 1. Go to [Google Cloud Console → Credentials](https://console.cloud.google.com/apis/credentials)
 2. Create an **OAuth 2.0 Client ID** (type: Web application)
@@ -167,6 +186,6 @@ Copy the `whsec_...` value to `STRIPE_WEBHOOK_SECRET`.
 
 ---
 
-## 8. Currency Note
+## 9. Currency Note
 
 > ⚠️ **Important:** The currency is set on Stripe products at **creation time** and cannot be changed afterwards. Changing `NEXT_PUBLIC_CURRENCY` after products exist will only apply to **new** products. Existing Stripe products will retain their original currency.
