@@ -10,11 +10,15 @@ export const Users: CollectionConfig = {
   slug: 'users',
   auth: {
     verify: {
+      generateEmailSubject: ({ req }) => {
+        // Provide a subject for all cases — Resend may reject if subject is empty.
+        if (req?.context?.isOAuthCreate) return 'Welcome'
+        return 'Verify your email'
+      },
       generateEmailHTML: async ({ token, req }) => {
         // OAuth-created users are already _verified: true.
-        // Returning '' causes Resend to reject with 422 (missing html field).
-        // Return a minimal valid HTML instead — the email is harmless since the
-        // user is already verified and will never need to click anything.
+        // Return a minimal valid HTML so Resend doesn't reject with 422.
+        // The email is inert — user is already verified and needs no action.
         if (req?.context?.isOAuthCreate) {
           return '<html><body></body></html>'
         }
