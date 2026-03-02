@@ -1,5 +1,4 @@
 import { NextResponse } from 'next/server'
-import { cookies } from 'next/headers'
 import { getPayloadClient } from '@/lib/payload'
 import crypto from 'crypto'
 import jwt from 'jsonwebtoken'
@@ -19,6 +18,27 @@ interface GoogleUserInfo {
   sub: string
 }
 
+/**
+ * Verify and decode the stateless HMAC-signed OAuth state parameter.
+ * Returns { nonce, origin } or null if invalid/tampered.
+ */
+function verifyState(state: string): { nonce: string; origin: string } | null {
+  try {
+    const dotIndex = state.lastIndexOf('.')
+    if (dotIndex === -1) return null
+    const encoded = state.slice(0, dotIndex)
+    const sig = state.slice(dotIndex + 1)
+    const expectedSig = crypto
+      .createHmac('sha256', process.env.PAYLOAD_SECRET!)
+      .update(encoded)
+      .digest('hex')
+    if (sig !== expectedSig) return null
+    return JSON.parse(Buffer.from(encoded, 'base64url').toString())
+  } catch {
+    return null
+  }
+}
+
 export async function GET(req: Request) {
   const { searchParams } = new URL(req.url)
   const code = searchParams.get('code')
@@ -36,24 +56,14 @@ export async function GET(req: Request) {
     return NextResponse.redirect(`${baseUrl}/sign-in?error=missing-params`)
   }
 
-  // Verify state
-  const cookieStore = await cookies()
-  const oauthStateCookie = cookieStore.get('google-oauth-state')?.value
-
-  if (!oauthStateCookie) {
-    return NextResponse.redirect(`${baseUrl}/sign-in?error=missing-state`)
-  }
-
-  let storedState: { state: string; origin: string }
-  try {
-    storedState = JSON.parse(oauthStateCookie)
-  } catch {
+  // Verify HMAC-signed state (stateless — no cookie needed)
+  const stateData = verifyState(state)
+  if (!stateData) {
     return NextResponse.redirect(`${baseUrl}/sign-in?error=invalid-state`)
   }
 
-  if (state !== storedState.state) {
-    return NextResponse.redirect(`${baseUrl}/sign-in?error=state-mismatch`)
-  }
+  const origin = stateData.origin || '/'
+
 
   try {
     // Exchange code for tokens
@@ -193,7 +203,6 @@ export async function GET(req: Request) {
     )
 
     // Set the payload-token cookie and redirect
-    const origin = storedState.origin || '/'
     const response = NextResponse.redirect(`${baseUrl}${origin}`)
 
     response.cookies.set('payload-token', payloadToken, {
@@ -203,9 +212,6 @@ export async function GET(req: Request) {
       path: '/',
       maxAge: 60 * 60 * 24 * 7, // 7 days
     })
-
-    // Clean up the oauth state cookie
-    response.cookies.delete('google-oauth-state')
 
     return response
   } catch (error) {

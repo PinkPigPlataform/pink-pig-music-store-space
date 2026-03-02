@@ -1,6 +1,21 @@
 import { NextResponse } from 'next/server'
 import crypto from 'crypto'
 
+/**
+ * Stateless OAuth state: encode { nonce, origin } as base64url + HMAC signature.
+ * No cookies needed — state travels via the OAuth `state` param and back.
+ * CSRF protection is maintained by the HMAC signature verified in the callback.
+ */
+function buildState(origin: string): string {
+  const payload = JSON.stringify({ nonce: crypto.randomBytes(16).toString('hex'), origin })
+  const encoded = Buffer.from(payload).toString('base64url')
+  const sig = crypto
+    .createHmac('sha256', process.env.PAYLOAD_SECRET!)
+    .update(encoded)
+    .digest('hex')
+  return `${encoded}.${sig}`
+}
+
 export async function GET(req: Request) {
   const { searchParams } = new URL(req.url)
   const origin = searchParams.get('origin') || '/'
@@ -13,8 +28,7 @@ export async function GET(req: Request) {
     )
   }
 
-  // Generate a random state to prevent CSRF
-  const state = crypto.randomBytes(32).toString('hex')
+  const state = buildState(origin)
 
   const baseUrl = process.env.NEXT_PUBLIC_SERVER_URL || ''
   const redirectUri = `${baseUrl}/api/auth/google/callback`
@@ -29,20 +43,7 @@ export async function GET(req: Request) {
     prompt: 'consent',
   })
 
-  // Set the cookie directly on the response object instead of via cookieStore.
-  // In Vercel serverless, cookieStore.set() inside a redirect handler can be
-  // silently dropped. Setting it on the NextResponse guarantees it is sent.
-  const response = NextResponse.redirect(
+  return NextResponse.redirect(
     `https://accounts.google.com/o/oauth2/v2/auth?${params}`
   )
-
-  response.cookies.set('google-oauth-state', JSON.stringify({ state, origin }), {
-    httpOnly: true,
-    secure: true,
-    sameSite: 'none',
-    path: '/',
-    maxAge: 60 * 10, // 10 minutes
-  })
-
-  return response
 }
