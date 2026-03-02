@@ -11,10 +11,13 @@ export const Users: CollectionConfig = {
   auth: {
     verify: {
       generateEmailHTML: async ({ token, req }) => {
-        // Skip sending verification email for OAuth-created users.
-        // They are already _verified: true and calling Resend on an
-        // unverified domain causes a 403 crash.
-        if (req?.context?.isOAuthCreate) return ''
+        // OAuth-created users are already _verified: true.
+        // Returning '' causes Resend to reject with 422 (missing html field).
+        // Return a minimal valid HTML instead — the email is harmless since the
+        // user is already verified and will never need to click anything.
+        if (req?.context?.isOAuthCreate) {
+          return '<html><body></body></html>'
+        }
 
         return await PrimaryActionEmailHtml({
           actionLabel: 'verify your account',
