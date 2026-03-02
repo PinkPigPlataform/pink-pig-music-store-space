@@ -1,6 +1,5 @@
 import { NextResponse } from 'next/server'
 import crypto from 'crypto'
-import { cookies } from 'next/headers'
 
 export async function GET(req: Request) {
   const { searchParams } = new URL(req.url)
@@ -17,16 +16,6 @@ export async function GET(req: Request) {
   // Generate a random state to prevent CSRF
   const state = crypto.randomBytes(32).toString('hex')
 
-  // Store state and origin in a cookie
-  const cookieStore = await cookies()
-  cookieStore.set('google-oauth-state', JSON.stringify({ state, origin }), {
-    httpOnly: true,
-    secure: process.env.NODE_ENV === 'production',
-    sameSite: 'lax',
-    path: '/',
-    maxAge: 60 * 10, // 10 minutes
-  })
-
   const baseUrl = process.env.NEXT_PUBLIC_SERVER_URL || ''
   const redirectUri = `${baseUrl}/api/auth/google/callback`
 
@@ -40,5 +29,20 @@ export async function GET(req: Request) {
     prompt: 'consent',
   })
 
-  return NextResponse.redirect(`https://accounts.google.com/o/oauth2/v2/auth?${params}`)
+  // Set the cookie directly on the response object instead of via cookieStore.
+  // In Vercel serverless, cookieStore.set() inside a redirect handler can be
+  // silently dropped. Setting it on the NextResponse guarantees it is sent.
+  const response = NextResponse.redirect(
+    `https://accounts.google.com/o/oauth2/v2/auth?${params}`
+  )
+
+  response.cookies.set('google-oauth-state', JSON.stringify({ state, origin }), {
+    httpOnly: true,
+    secure: process.env.NODE_ENV === 'production',
+    sameSite: 'lax',
+    path: '/',
+    maxAge: 60 * 10, // 10 minutes
+  })
+
+  return response
 }
