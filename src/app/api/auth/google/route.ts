@@ -38,8 +38,8 @@ export async function GET(req: Request) {
 
   response.cookies.set('google-oauth-state', JSON.stringify({ state, origin }), {
     httpOnly: true,
-    secure: process.env.NODE_ENV === 'production',
-    sameSite: 'lax',
+    secure: true,
+    sameSite: 'none',
     path: '/',
     maxAge: 60 * 10, // 10 minutes
   })
