@@ -108,6 +108,7 @@ export async function GET(req: Request) {
     const { docs: existingUsers } = await payload.find({
       collection: 'users',
       where: { email: { equals: googleUser.email } },
+      overrideAccess: true,
       limit: 1,
     })
 
@@ -122,6 +123,7 @@ export async function GET(req: Request) {
         await payload.update({
           collection: 'users',
           id: existingUser.id,
+          overrideAccess: true,
           data: { _verified: true },
         })
       }
@@ -157,6 +159,7 @@ export async function GET(req: Request) {
           const { docs: createdDocs } = await payload.find({
             collection: 'users',
             where: { email: { equals: googleUser.email } },
+            overrideAccess: true,
             limit: 1,
           })
 
@@ -168,6 +171,7 @@ export async function GET(req: Request) {
               await payload.update({
                 collection: 'users',
                 id: userId,
+                overrideAccess: true,
                 data: { _verified: true },
               })
             }
