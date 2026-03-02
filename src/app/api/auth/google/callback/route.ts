@@ -131,7 +131,11 @@ export async function GET(req: Request) {
             role: 'user',
             _verified: true,
           },
-          context: { isOAuthCreate: true, skipVerificationEmail: true },
+          context: {
+            isOAuthCreate: true,
+            skipVerificationEmail: true,
+            disableVerificationEmail: true,
+          },
         })
         userId = newUser.id
       } catch (createError) {
@@ -156,6 +160,7 @@ export async function GET(req: Request) {
           }
         } else {
           // User was not created at all — surface the real error.
+          console.warn('Google OAuth: user not found after createError, rethrowing:', createError)
           throw createError
         }
       }

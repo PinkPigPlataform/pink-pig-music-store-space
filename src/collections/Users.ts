@@ -11,16 +11,18 @@ export const Users: CollectionConfig = {
   auth: {
     verify: {
       generateEmailSubject: ({ req }) => {
-        // Provide a subject for all cases — Resend may reject if subject is empty.
-        if (req?.context?.isOAuthCreate) return 'Welcome'
+        if (req?.context?.isOAuthCreate ||
+          req?.context?.skipVerificationEmail ||
+          req?.context?.disableVerificationEmail) return 'Welcome'
         return 'Verify your email'
       },
       generateEmailHTML: async ({ token, req }) => {
-        // OAuth-created users are already _verified: true.
-        // Return a minimal valid HTML so Resend doesn't reject with 422.
-        // The email is inert — user is already verified and needs no action.
-        if (req?.context?.isOAuthCreate) {
-          return '<html><body></body></html>'
+        // Skip verification email for OAuth users — they are already _verified: true.
+        // Return ' ' (single space) so Resend passes html-presence validation.
+        if (req?.context?.isOAuthCreate ||
+          req?.context?.skipVerificationEmail ||
+          req?.context?.disableVerificationEmail) {
+          return ' '
         }
 
         return await PrimaryActionEmailHtml({
