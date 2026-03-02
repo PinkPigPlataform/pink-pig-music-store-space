@@ -128,62 +128,27 @@ export async function GET(req: Request) {
         })
       }
     } else {
-      // Create new user. Payload persists to DB before triggering the email
-      // hook, so if the email fails the user already exists in MongoDB.
-      // We always attempt recovery — email errors must NEVER block OAuth login.
-      const randomPassword = crypto.randomBytes(32).toString('hex')
-
+      // Create user directly via the DB adapter — no Payload hooks, no email.
+      // OAuth users authenticate via Google only; they never need email/password login.
+      // Using payload.db.create() bypasses the verification email flow entirely,
+      // making this independent of Resend domain configuration.
       try {
-        const newUser = await payload.create({
+        const newDoc = await payload.db.create({
           collection: 'users',
           data: {
             email: googleUser.email,
-            password: randomPassword,
             role: 'user',
             _verified: true,
+            createdAt: new Date().toISOString(),
+            updatedAt: new Date().toISOString(),
           },
-          context: {
-            isOAuthCreate: true,
-            skipVerificationEmail: true,
-            disableVerificationEmail: true,
-          },
+          req: undefined as never,
         })
-        userId = newUser.id
-      } catch (createError) {
-        // payload.create threw — could be email failure or a real DB error.
-        // Log the raw error so it is visible in Vercel logs.
-        console.warn('Google OAuth: payload.create threw (may be email error):', createError)
-
-        // Always attempt to recover — find the user that was (likely) persisted.
-        try {
-          const { docs: createdDocs } = await payload.find({
-            collection: 'users',
-            where: { email: { equals: googleUser.email } },
-            overrideAccess: true,
-            limit: 1,
-          })
-
-          if (createdDocs.length > 0) {
-            userId = createdDocs[0].id
-            console.warn('Google OAuth: recovered userId after createError:', userId)
-
-            if (!createdDocs[0]._verified) {
-              await payload.update({
-                collection: 'users',
-                id: userId,
-                overrideAccess: true,
-                data: { _verified: true },
-              })
-            }
-          } else {
-            // User truly was not persisted — log the failure clearly.
-            console.error('Google OAuth: user not in DB after createError. Original error:', createError)
-            // userId stays undefined → handled below
-          }
-        } catch (findError) {
-          console.error('Google OAuth: find-after-create also failed:', findError)
-          // userId stays undefined → handled below
-        }
+        userId = (newDoc as { id: string | number }).id
+        console.log('Google OAuth: user created via db.create, id:', userId)
+      } catch (dbError) {
+        console.error('Google OAuth: db.create failed:', dbError)
+        // userId stays undefined → handled below
       }
     }
 
@@ -192,7 +157,6 @@ export async function GET(req: Request) {
       console.error('Google OAuth: could not resolve userId — aborting')
       return NextResponse.redirect(`${baseUrl}/sign-in?error=server-error`)
     }
-
 
     // Generate Payload JWT token manually
     const payloadSecret = process.env.PAYLOAD_SECRET!
