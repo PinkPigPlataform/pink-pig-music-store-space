@@ -1,29 +1,11 @@
-import { auth } from '@/lib/auth'
-import { redirect } from 'next/navigation'
-import { Sidebar } from '@/components/admin/sidebar'
-import { SessionProvider } from 'next-auth/react'
+// Layout raiz do /admin — sem auth check.
+// A proteção é feita pelo middleware (getToken) e pelo layout de (protected).
+// A página /admin/login precisa ficar fora do layout protegido para evitar redirect loop.
 
-export const metadata = {
-  title: 'Admin Panel',
-  robots: { index: false, follow: false },
-}
-
-export default async function AdminLayout({
+export default function AdminRootLayout({
   children,
 }: {
   children: React.ReactNode
 }) {
-  const session = await auth()
-  if (!session?.user) redirect('/admin/login')
-
-  return (
-    <SessionProvider session={session}>
-      <div className="flex h-screen bg-gray-50 overflow-hidden">
-        <Sidebar />
-        <div className="flex-1 flex flex-col overflow-hidden">
-          <main className="flex-1 overflow-y-auto">{children}</main>
-        </div>
-      </div>
-    </SessionProvider>
-  )
+  return <>{children}</>
 }

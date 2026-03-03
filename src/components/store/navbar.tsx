@@ -12,8 +12,11 @@ export default function StoreNavbar() {
   return (
     <header className="sticky top-0 z-40 bg-white/95 backdrop-blur-sm border-b">
       <div className="max-w-6xl mx-auto px-4 h-16 flex items-center justify-between">
-        <Link href="/" className="font-bold text-xl text-pink-500">
-          {process.env.NEXT_PUBLIC_STORE_NAME || '🐷 Loja'}
+        <Link href="/" className="flex items-center gap-2.5">
+          <img src="/favicon.ico" alt="Logo" className="w-8 h-8 object-contain" />
+          <span className="font-bold text-lg text-pink-500">
+            {process.env.NEXT_PUBLIC_STORE_NAME || 'Loja'}
+          </span>
         </Link>
 
         <nav className="hidden md:flex items-center gap-6">

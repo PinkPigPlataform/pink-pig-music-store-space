@@ -3,6 +3,7 @@ import Credentials from 'next-auth/providers/credentials'
 import bcrypt from 'bcryptjs'
 import { connectMongo } from './mongodb'
 import AdminModel from './models/Admin'
+import { authConfig } from './auth.config'
 
 declare module 'next-auth' {
     interface User {
@@ -18,11 +19,8 @@ declare module 'next-auth' {
     }
 }
 
-
 export const { handlers: authHandlers, signIn, signOut, auth } = NextAuth({
-    trustHost: true,
-    session: { strategy: 'jwt', maxAge: 60 * 60 * 24 * 30 },
-    pages: { signIn: '/admin/login' },
+    ...authConfig,
     providers: [
         Credentials({
             credentials: {
@@ -54,20 +52,4 @@ export const { handlers: authHandlers, signIn, signOut, auth } = NextAuth({
             },
         }),
     ],
-    callbacks: {
-        async jwt({ token, user }) {
-            if (user) {
-                token.role = user.role
-                token.id = user.id ?? token.sub
-            }
-            return token
-        },
-        async session({ session, token }) {
-            if (session.user) {
-                session.user.id = (token.id as string) ?? token.sub ?? ''
-                session.user.role = (token.role as string) ?? 'admin'
-            }
-            return session
-        },
-    },
 })

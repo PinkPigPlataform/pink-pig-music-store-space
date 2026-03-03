@@ -48,6 +48,20 @@ module.exports = {
           foreground: 'hsl(var(--card-foreground))',
         },
         brand: 'hsl(var(--brand))',
+        // Brand pink — matches favicon logo #D37B93
+        pink: {
+          50: '#fdf2f4',
+          100: '#fbe5ea',
+          200: '#f7cad5',
+          300: '#f09db5',
+          400: '#e58da6',
+          500: '#D37B93', // ← Brand color (logo)
+          600: '#bf6a80',
+          700: '#a5556a',
+          800: '#8a4258',
+          900: '#6e3246',
+          950: '#3e1827',
+        },
       },
       borderRadius: {
         lg: 'var(--radius)',
