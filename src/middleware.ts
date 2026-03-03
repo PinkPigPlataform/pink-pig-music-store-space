@@ -1,18 +1,24 @@
-import { NextRequest, NextResponse } from 'next/server'
+import { NextResponse } from 'next/server'
+import type { NextRequest } from 'next/server'
+import { getToken } from 'next-auth/jwt'
 
 export async function middleware(req: NextRequest) {
-  const { nextUrl, cookies } = req
-  const token = cookies.get('payload-token')?.value
+    const { pathname } = req.nextUrl
 
-  const isAuthenticated = !!token
+    if (pathname.startsWith('/admin') && pathname !== '/admin/login') {
+        const token = await getToken({
+            req,
+            secret: process.env.NEXTAUTH_SECRET,
+        })
 
-  if (isAuthenticated && ['/sign-in', '/sign-up'].includes(nextUrl.pathname)) {
-    return NextResponse.redirect(new URL('/', req.url))
-  }
+        if (!token) {
+            return NextResponse.redirect(new URL('/admin/login', req.url))
+        }
+    }
 
-  return NextResponse.next()
+    return NextResponse.next()
 }
 
 export const config = {
-  matcher: ['/sign-in', '/sign-up'],
+    matcher: ['/admin/:path*'],
 }

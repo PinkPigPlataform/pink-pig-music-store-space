@@ -1,38 +1,23 @@
-import Navbar from '@/components/Navbar'
-import Providers from '@/components/Providers'
-import { LocaleProvider } from '@/components/LocaleProvider'
-import { TenantThemeInjector } from '@/components/TenantThemeInjector'
-import { cn, constructMetadata } from '@/lib/utils'
 import type { Metadata } from 'next'
-import { Inter } from 'next/font/google'
 import { Toaster } from 'sonner'
-import './globals.css'
-import Footer from '@/components/Footer'
+import StoreNavbar from '@/components/store/navbar'
+import StoreFooter from '@/components/store/footer'
 
-const inter = Inter({ subsets: ['latin'] })
+export const metadata: Metadata = {
+  title: `${process.env.NEXT_PUBLIC_STORE_NAME || 'Loja Digital'}`,
+}
 
-export const metadata: Metadata = constructMetadata()
-
-export default function RootLayout({
+export default function StoreLayout({
   children,
 }: {
   children: React.ReactNode
 }) {
   return (
-    <html lang='en' className='h-full'>
-      <body className={cn('relative h-full font-sans antialiased', inter.className)}>
-        <TenantThemeInjector />
-        <main className='relative flex flex-col min-h-screen'>
-          <Providers>
-            <LocaleProvider>
-              <Navbar />
-              <div className='flex-grow flex-1'>{children}</div>
-              <Footer />
-            </LocaleProvider>
-          </Providers>
-        </main>
-        <Toaster position='top-center' richColors />
-      </body>
-    </html>
+    <>
+      <StoreNavbar />
+      <main className="min-h-[calc(100vh-64px-200px)]">{children}</main>
+      <StoreFooter />
+      <Toaster position="top-center" richColors />
+    </>
   )
 }

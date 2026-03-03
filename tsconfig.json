@@ -25,9 +25,6 @@
     "paths": {
       "@/*": [
         "./src/*"
-      ],
-      "@payload-config": [
-        "./src/payload.config.ts"
       ]
     }
   },
@@ -35,9 +32,7 @@
     "next-env.d.ts",
     "**/*.ts",
     "**/*.tsx",
-    ".next/types/**/*.ts",
-    ".next/dev/types/**/*.ts",
-    "src/app/(payload)/admin/importMap.js"
+    ".next/types/**/*.ts"
   ],
   "exclude": [
     "node_modules"
