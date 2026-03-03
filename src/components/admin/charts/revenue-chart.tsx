@@ -37,7 +37,7 @@ export function RevenueChart({ data }: RevenueChartProps) {
         <XAxis dataKey="month" tick={{ fontSize: 12, fill: '#6b7280' }} axisLine={false} tickLine={false} />
         <YAxis tickFormatter={(v) => `R$${v}`} tick={{ fontSize: 11, fill: '#6b7280' }} axisLine={false} tickLine={false} width={56} />
         <Tooltip
-          formatter={(v: number) => [formatCurrency(v), 'Receita']}
+          formatter={(v: number | undefined) => [v != null ? formatCurrency(v) : '—', 'Receita']}
           contentStyle={{ borderRadius: 8, border: 'none', boxShadow: '0 4px 24px rgba(0,0,0,0.08)' }}
           labelStyle={{ fontWeight: 600 }}
         />
