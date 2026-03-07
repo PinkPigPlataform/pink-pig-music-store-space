@@ -1,6 +1,7 @@
 'use client'
 
 import { useState, useEffect, useRef } from 'react'
+import { useSession } from 'next-auth/react'
 import { AdminHeader } from '@/components/admin/header'
 import { Camera, User, Mail, Lock, Loader2, Shield, CheckCircle2 } from 'lucide-react'
 import { toast } from 'sonner'
@@ -14,6 +15,7 @@ interface AdminProfile {
 }
 
 export default function AdminSettingsPage() {
+  const { update: updateSession } = useSession()
   const [profile, setProfile] = useState<AdminProfile | null>(null)
   const [loading, setLoading] = useState(true)
   const [avatarUploading, setAvatarUploading] = useState(false)
@@ -72,6 +74,8 @@ export default function AdminSettingsPage() {
     const data = await res.json()
     if (res.ok) {
       setProfile(p => p ? { ...p, name: data.data.name, email: data.data.email } : p)
+      // Refresh the JWT so header/sidebar reflect new name immediately
+      await updateSession({ name: data.data.name })
       toast.success('Perfil atualizado!')
     } else {
       toast.error(data.error ?? 'Erro ao salvar')

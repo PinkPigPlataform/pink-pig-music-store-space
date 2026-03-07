@@ -15,10 +15,14 @@ export const authConfig = {
             }
             return true
         },
-        async jwt({ token, user }) {
+        async jwt({ token, user, trigger, session }) {
             if (user) {
                 token.role = (user as { role?: string }).role
                 token.id = user.id ?? token.sub
+            }
+            // Handle update() call from client — sync new name into token
+            if (trigger === 'update' && session?.name) {
+                token.name = session.name
             }
             return token
         },
