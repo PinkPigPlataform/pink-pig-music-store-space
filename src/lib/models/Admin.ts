@@ -10,6 +10,7 @@ const AdminSchema = new Schema(
             enum: ['admin', 'super_admin'],
             default: 'admin',
         },
+        avatar: { type: String, default: null },
     },
     { timestamps: true }
 )
