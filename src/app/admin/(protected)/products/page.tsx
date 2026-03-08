@@ -7,7 +7,7 @@ import { Plus, Search, Edit, Trash2, Package, X, Loader2, ImagePlus, Star } from
 import { toast } from 'sonner'
 
 // ─── Types ───────────────────────────────────────────────
-interface Category { _id: string; label: string }
+interface Category { _id: string; label: string; parent?: { _id: string; label: string } | null }
 interface DigitalFile { _id: string; name: string }
 interface Product {
   _id: string
@@ -231,7 +231,13 @@ export default function AdminProductsPage() {
                       </div>
                     </td>
                     <td className="px-4 py-3.5 text-gray-600 hidden md:table-cell">
-                      {p.category?.label ?? '—'}
+                      {(() => {
+                        if (!p.category) return '—'
+                        const fullCat = categories.find(c => c._id === p.category?._id)
+                        return fullCat?.parent 
+                          ? <><span className="text-gray-400">{fullCat.parent.label} &rsaquo; </span>{fullCat.label}</>
+                          : <span className="font-medium text-gray-700">{p.category.label}</span>
+                      })()}
                     </td>
                     <td className="px-4 py-3.5 font-medium text-gray-900">
                       {formatPrice(Math.round(p.price * 100))}
@@ -356,8 +362,15 @@ export default function AdminProductsPage() {
                     className="w-full border border-gray-200 rounded-lg px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-pink-500 bg-white"
                   >
                     <option value="">Selecionar...</option>
-                    {categories.map(c => (
-                      <option key={c._id} value={c._id}>{c.label}</option>
+                    {categories.filter(c => !c.parent).map(root => (
+                      <optgroup key={root._id} label={root.label} className="font-semibold text-gray-900 bg-gray-50/50">
+                        <option value={root._id} className="font-normal text-gray-600 bg-white">SELECIONAR: {root.label} (Geral)</option>
+                        {categories.filter(sub => sub.parent?._id === root._id).map(sub => (
+                          <option key={sub._id} value={sub._id} className="font-medium text-gray-700 bg-white">
+                            └ {sub.label}
+                          </option>
+                        ))}
+                      </optgroup>
                     ))}
                   </select>
                 </div>

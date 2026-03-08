@@ -37,11 +37,25 @@ export async function PUT(
             }
         }
 
+        const payload: any = { ...data, parent: data.parent ?? null }
+
+        // Auto-update slug if label changes
+        if (data.label) {
+            const { generateSlug } = await import('@/lib/utils')
+            payload.value = generateSlug(data.label)
+
+            // Ensure new slug is unique
+            const existing = await CategoryModel.findOne({ value: payload.value, _id: { $ne: params.id } })
+            if (existing) {
+                return NextResponse.json({ error: 'Já existe uma categoria com este nome/link' }, { status: 409 })
+            }
+        }
+
         const cat = await CategoryModel.findByIdAndUpdate(
             params.id,
-            { ...data, parent: data.parent ?? null },
+            payload,
             { new: true }
-        ).populate('parent', 'label value')
+        )
 
         if (!cat) return NextResponse.json({ error: 'Não encontrado' }, { status: 404 })
         return NextResponse.json({ data: cat })
