@@ -19,14 +19,21 @@ export async function GET() {
 
     await connectMongo()
 
-    // Fetch all categories with parent populated
-    const categories = await CategoryModel.find()
-        .populate('parent', 'label value')
-        .sort({ order: 1, label: 1 })
-        .lean()
-
-    return NextResponse.json({ data: categories })
+    try {
+        const categories = await CategoryModel.find()
+            .populate({ path: 'parent', select: 'label value', strictPopulate: false })
+            .sort({ order: 1, label: 1 })
+            .lean()
+        return NextResponse.json({ data: categories })
+    } catch {
+        // Fallback: return without populate if schema is stale-cached
+        const categories = await CategoryModel.find()
+            .sort({ order: 1, label: 1 })
+            .lean()
+        return NextResponse.json({ data: categories })
+    }
 }
+
 
 export async function POST(req: Request) {
     const { response } = await requireAdmin()

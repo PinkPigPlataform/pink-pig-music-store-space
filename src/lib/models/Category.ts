@@ -1,4 +1,4 @@
-import { Schema, model, models } from 'mongoose'
+import mongoose, { Schema, model } from 'mongoose'
 
 const CategorySchema = new Schema(
     {
@@ -15,4 +15,7 @@ const CategorySchema = new Schema(
 CategorySchema.index({ parent: 1, active: 1 })
 CategorySchema.index({ value: 1 })
 
-export default models.Category || model('Category', CategorySchema)
+// Delete cached model to avoid stale schema during Next.js hot reload
+delete mongoose.models['Category']
+
+export default model('Category', CategorySchema)
