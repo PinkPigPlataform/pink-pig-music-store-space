@@ -9,6 +9,8 @@ const schema = z.object({
     label: z.string().min(1),
     description: z.string().optional(),
     active: z.boolean().optional(),
+    parent: z.string().nullable().optional(),
+    order: z.number().optional(),
 })
 
 export async function GET() {
@@ -16,7 +18,13 @@ export async function GET() {
     if (response) return response
 
     await connectMongo()
-    const categories = await CategoryModel.find().sort({ label: 1 }).lean()
+
+    // Fetch all categories with parent populated
+    const categories = await CategoryModel.find()
+        .populate('parent', 'label value')
+        .sort({ order: 1, label: 1 })
+        .lean()
+
     return NextResponse.json({ data: categories })
 }
 
@@ -26,7 +34,7 @@ export async function POST(req: Request) {
 
     try {
         const body = await req.json()
-        const { label, description, active } = schema.parse(body)
+        const { label, description, active, parent, order } = schema.parse(body)
         const value = generateSlug(label)
 
         await connectMongo()
@@ -36,7 +44,23 @@ export async function POST(req: Request) {
             return NextResponse.json({ error: 'Categoria já existe' }, { status: 409 })
         }
 
-        const category = await CategoryModel.create({ label, value, description, active })
+        // Prevent depth > 2: parent must be a root category
+        if (parent) {
+            const parentCat = await CategoryModel.findById(parent)
+            if (!parentCat) {
+                return NextResponse.json({ error: 'Categoria pai não encontrada' }, { status: 404 })
+            }
+            if (parentCat.parent) {
+                return NextResponse.json({ error: 'Subcategorias não podem ter filhos (máx. 2 níveis)' }, { status: 400 })
+            }
+        }
+
+        const category = await CategoryModel.create({
+            label, value, description, active,
+            parent: parent || null,
+            order: order ?? 0,
+        })
+
         return NextResponse.json({ data: category }, { status: 201 })
     } catch (err) {
         if (err instanceof z.ZodError) {
