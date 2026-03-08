@@ -1,11 +1,11 @@
 import { SessionProvider } from 'next-auth/react'
 import { auth } from '@/lib/auth'
 import { redirect } from 'next/navigation'
-import { Sidebar } from '@/components/admin/sidebar'
+import { AdminShell } from '@/components/admin/admin-shell'
 import { Toaster } from 'sonner'
 
 export const metadata = {
-  title: 'Admin Panel',
+  title: 'Admin Panel | Pink Pig Plataform',
   robots: { index: false, follow: false },
 }
 
@@ -19,12 +19,7 @@ export default async function ProtectedAdminLayout({
 
   return (
     <SessionProvider session={session}>
-      <div className="flex h-screen bg-gray-50 overflow-hidden">
-        <Sidebar />
-        <div className="flex-1 flex flex-col overflow-hidden">
-          <main className="flex-1 overflow-y-auto">{children}</main>
-        </div>
-      </div>
+      <AdminShell>{children}</AdminShell>
       <Toaster position="top-center" richColors />
     </SessionProvider>
   )

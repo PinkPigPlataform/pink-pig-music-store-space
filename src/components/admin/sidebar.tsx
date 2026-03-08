@@ -13,27 +13,30 @@ import { cn } from '@/lib/utils'
 type AdminRole = 'support' | 'admin' | 'super_admin'
 
 const ALL_LINKS = [
-  { href: '/admin',            label: 'Dashboard',    icon: LayoutDashboard, minRole: 'support'     as AdminRole },
-  { href: '/admin/products',   label: 'Produtos',     icon: Package,         minRole: 'admin'       as AdminRole },
-  { href: '/admin/categories', label: 'Categorias',   icon: Tags,            minRole: 'admin'       as AdminRole },
-  { href: '/admin/orders',     label: 'Pedidos',      icon: ShoppingCart,    minRole: 'support'     as AdminRole },
-  { href: '/admin/customers',  label: 'Clientes',     icon: Users,           minRole: 'support'     as AdminRole },
-  { href: '/admin/files',      label: 'Arquivos',     icon: FolderOpen,      minRole: 'admin'       as AdminRole },
-  { href: '/admin/team',       label: 'Equipe',       icon: UsersRound,      minRole: 'super_admin' as AdminRole },
-  { href: '/admin/settings',   label: 'Configurações', icon: Settings,       minRole: 'support'     as AdminRole },
+  { href: '/admin',            label: 'Dashboard',     icon: LayoutDashboard, minRole: 'support'     as AdminRole },
+  { href: '/admin/products',   label: 'Produtos',      icon: Package,         minRole: 'admin'       as AdminRole },
+  { href: '/admin/categories', label: 'Categorias',    icon: Tags,            minRole: 'admin'       as AdminRole },
+  { href: '/admin/orders',     label: 'Pedidos',       icon: ShoppingCart,    minRole: 'support'     as AdminRole },
+  { href: '/admin/customers',  label: 'Clientes',      icon: Users,           minRole: 'support'     as AdminRole },
+  { href: '/admin/files',      label: 'Arquivos',      icon: FolderOpen,      minRole: 'admin'       as AdminRole },
+  { href: '/admin/team',       label: 'Equipe',        icon: UsersRound,      minRole: 'super_admin' as AdminRole },
+  { href: '/admin/settings',   label: 'Configurações', icon: Settings,        minRole: 'support'     as AdminRole },
 ]
 
 const ROLE_RANK: Record<AdminRole, number> = { support: 0, admin: 1, super_admin: 2 }
 
-export function Sidebar() {
+interface SidebarProps {
+  onNavigate?: () => void
+}
+
+export function Sidebar({ onNavigate }: SidebarProps) {
   const pathname = usePathname()
   const { data: session } = useSession()
   const role = ((session?.user as { role?: string })?.role ?? 'support') as AdminRole
-
   const links = ALL_LINKS.filter(l => ROLE_RANK[role] >= ROLE_RANK[l.minRole])
 
   return (
-    <aside className="w-64 shrink-0 bg-gray-950 text-white flex flex-col h-screen sticky top-0 border-r border-gray-800">
+    <aside className="w-64 shrink-0 bg-gray-950 text-white flex flex-col h-full border-r border-gray-800">
       {/* Logo */}
       <div className="px-5 py-5 border-b border-gray-800">
         <div className="flex items-center gap-3">
@@ -57,6 +60,7 @@ export function Sidebar() {
             <Link
               key={href}
               href={href}
+              onClick={onNavigate}
               className={cn(
                 'flex items-center gap-3 px-3 py-2.5 rounded-lg text-sm font-medium transition-all',
                 active
@@ -71,14 +75,14 @@ export function Sidebar() {
         })}
       </nav>
 
-      {/* Role badge at bottom */}
-      <div className="px-5 py-3 border-t border-gray-800 space-y-3">
-        <div className="flex items-center gap-2">
-          <div className="w-2 h-2 rounded-full bg-green-400" />
-          <span className="text-xs text-gray-400 truncate">
+      {/* Footer: user info + sign out */}
+      <div className="px-3 py-4 border-t border-gray-800 space-y-3">
+        <div className="flex items-center gap-2 px-2">
+          <div className="w-2 h-2 rounded-full bg-green-400 shrink-0" />
+          <span className="text-xs text-gray-400 truncate flex-1">
             {(session?.user?.name ?? session?.user?.email ?? '').toString().split(' ')[0]}
           </span>
-          <span className="ml-auto text-[10px] text-pink-400 font-semibold uppercase tracking-wide">
+          <span className="text-[10px] text-pink-400 font-semibold uppercase tracking-wide shrink-0">
             {role.replace('_', ' ')}
           </span>
         </div>
@@ -87,7 +91,7 @@ export function Sidebar() {
           onClick={() => signOut({ callbackUrl: '/admin/login' })}
           className="flex items-center gap-3 px-3 py-2.5 w-full rounded-lg text-sm font-medium text-gray-400 hover:bg-gray-800 hover:text-white transition-colors"
         >
-          <LogOut className="w-4 h-4" />
+          <LogOut className="w-4 h-4 shrink-0" />
           Sair
         </button>
       </div>
