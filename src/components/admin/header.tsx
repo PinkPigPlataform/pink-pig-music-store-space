@@ -13,15 +13,20 @@ export function AdminHeader({ title }: AdminHeaderProps) {
   const { data: session } = useSession()
   const [dropdownOpen, setDropdownOpen] = useState(false)
   const [avatar, setAvatar] = useState<string | null>(null)
+  const [dbName, setDbName] = useState<string | null>(null)
   const dropdownRef = useRef<HTMLDivElement>(null)
 
-  const name: string = (session?.user?.name ?? session?.user?.email ?? 'Admin') as string
+  // Name from DB takes priority over potentially stale JWT
+  const name = dbName ?? (session?.user?.name ?? session?.user?.email ?? 'Admin') as string
   const initials = name.split(' ').map(n => n[0]).join('').slice(0, 2).toUpperCase()
 
   useEffect(() => {
     fetch('/api/admin/me')
       .then(r => r.json())
-      .then(data => { if (data?.data?.avatar) setAvatar(data.data.avatar) })
+      .then(data => {
+        if (data?.data?.avatar) setAvatar(data.data.avatar)
+        if (data?.data?.name) setDbName(data.data.name)
+      })
       .catch(() => null)
   }, [])
 

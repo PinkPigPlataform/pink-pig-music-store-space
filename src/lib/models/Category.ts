@@ -4,7 +4,7 @@ const CategorySchema = new Schema(
     {
         label: { type: String, required: true },
         value: { type: String, required: true, unique: true, lowercase: true },
-        description: { type: String },
+        description: { type: String, default: '' },
         active: { type: Boolean, default: true },
         parent: { type: Schema.Types.ObjectId, ref: 'Category', default: null },
         order: { type: Number, default: 0 },
@@ -12,10 +12,8 @@ const CategorySchema = new Schema(
     { timestamps: true }
 )
 
-CategorySchema.index({ parent: 1, active: 1 })
-CategorySchema.index({ value: 1 })
-
-// Delete cached model to avoid stale schema during Next.js hot reload
-delete mongoose.models['Category']
-
+// Force re-registration in Next.js HMR to avoid stale schema
+if (mongoose.models['Category']) {
+    delete mongoose.models['Category']
+}
 export default model('Category', CategorySchema)
