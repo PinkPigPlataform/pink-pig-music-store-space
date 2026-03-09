@@ -86,7 +86,9 @@ export default async function ProductPage({
           </div>
 
           {p.description && (
-            <p className="mt-6 text-gray-600 leading-relaxed">{p.description}</p>
+            <div className="mt-6 text-gray-600 leading-relaxed whitespace-pre-wrap font-medium">
+              {p.description}
+            </div>
           )}
 
           <AddToCartButton
