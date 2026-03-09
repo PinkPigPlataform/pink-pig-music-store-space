@@ -42,10 +42,10 @@ export default async function ProductPage({
   }
 
   return (
-    <div className="max-w-5xl mx-auto px-4 py-10">
-      <div className="grid grid-cols-1 md:grid-cols-2 gap-10">
+    <div className="max-w-6xl mx-auto px-4 py-8 md:py-12">
+      <div className="grid grid-cols-1 lg:grid-cols-12 gap-10 lg:gap-14">
         {/* Images */}
-        <div className="space-y-4">
+        <div className="lg:col-span-5 space-y-4">
           <div className="aspect-square bg-gradient-to-br from-white via-gray-50/80 to-gray-100/50 rounded-3xl overflow-hidden relative border border-white shadow-[0_8px_40px_-10px_rgba(0,0,0,0.08)] ring-1 ring-black/5 flex items-center justify-center">
             {p.images?.[0] ? (
               <Image
@@ -73,14 +73,14 @@ export default async function ProductPage({
         </div>
 
         {/* Info */}
-        <div className="flex flex-col">
+        <div className="lg:col-span-7 flex flex-col">
           <div>
             {p.category && (
               <span className="inline-block px-3 py-1 bg-pink-50 text-pink-600 text-xs font-bold uppercase tracking-wider rounded-full mb-4">
                 {p.category.label}
               </span>
             )}
-            <h1 className="text-4xl sm:text-5xl font-extrabold text-gray-900 tracking-tight leading-tight mb-4">
+            <h1 className="text-3xl sm:text-4xl md:text-[2.5rem] font-extrabold text-gray-900 tracking-tight leading-tight mb-4">
               {p.name}
             </h1>
           </div>
@@ -120,18 +120,23 @@ export default async function ProductPage({
               </div>
             </div>
           </div>
-
-          {/* Description */}
-          {p.description && (
-            <div className="mt-12 pt-10 border-t border-gray-200">
-              <h3 className="text-2xl font-bold text-gray-900 mb-6">Sobre o produto</h3>
-              <div className="text-gray-600 leading-relaxed whitespace-pre-wrap text-lg">
-                {p.description}
-              </div>
-            </div>
-          )}
         </div>
       </div>
+
+      {/* Description */}
+      {p.description && (
+        <div className="mt-16 lg:mt-24 pt-12 border-t border-gray-100 mb-10">
+          <div className="max-w-3xl mx-auto">
+            <h3 className="text-2xl font-bold text-gray-900 mb-8 flex items-center gap-3">
+              <span className="w-1.5 h-8 bg-pink-500 rounded-full inline-block shrink-0"></span>
+              Sobre o conteúdo
+            </h3>
+            <div className="text-gray-600 leading-relaxed whitespace-pre-wrap text-[1.05rem]">
+              {p.description}
+            </div>
+          </div>
+        </div>
+      )}
     </div>
   )
 }
