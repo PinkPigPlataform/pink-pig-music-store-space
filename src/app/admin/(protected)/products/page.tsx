@@ -296,9 +296,9 @@ export default function AdminProductsPage() {
                     <td className="px-5 py-3.5">
                       <div className="flex items-center gap-3">
                         {p.images?.[0] ? (
-                          <img src={p.images[0]} alt={p.name} className="w-10 h-10 rounded-lg object-cover shrink-0" />
+                          <img src={p.images[0]} alt={p.name} className="w-12 h-12 rounded bg-gray-50 object-contain shrink-0" />
                         ) : (
-                          <div className="w-10 h-10 rounded-lg bg-gray-100 flex items-center justify-center shrink-0">
+                          <div className="w-12 h-12 rounded bg-gray-100 flex items-center justify-center shrink-0">
                             <Package className="w-5 h-5 text-gray-300" />
                           </div>
                         )}
@@ -380,7 +380,7 @@ export default function AdminProductsPage() {
                   <input ref={imageRef} type="file" accept="image/*" className="hidden" onChange={handleImageUpload} />
                   {form.imageUrl ? (
                     <div className="flex items-center gap-3">
-                      <img src={form.imageUrl} alt="preview" className="w-16 h-16 rounded-lg object-cover" />
+                      <img src={form.imageUrl} alt="preview" className="w-16 h-16 rounded bg-gray-50 object-contain" />
                       <div className="text-left">
                         <p className="text-sm text-green-600 font-medium">Imagem carregada ✓</p>
                         <p className="text-xs text-gray-400">Clique para trocar</p>
