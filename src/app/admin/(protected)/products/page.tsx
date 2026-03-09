@@ -296,10 +296,12 @@ export default function AdminProductsPage() {
                     <td className="px-5 py-3.5">
                       <div className="flex items-center gap-3">
                         {p.images?.[0] ? (
-                          <img src={p.images[0]} alt={p.name} className="w-12 h-12 rounded bg-gray-50 object-contain shrink-0" />
+                          <div className="w-20 h-20 rounded-lg border border-gray-100 bg-white overflow-hidden shadow-sm shrink-0 flex items-center justify-center">
+                            <img src={p.images[0]} alt={p.name} className="max-w-full max-h-full object-contain p-1" />
+                          </div>
                         ) : (
-                          <div className="w-12 h-12 rounded bg-gray-100 flex items-center justify-center shrink-0">
-                            <Package className="w-5 h-5 text-gray-300" />
+                          <div className="w-20 h-20 rounded-lg border border-gray-100 bg-gray-50 flex items-center justify-center shadow-sm shrink-0">
+                            <Package className="w-6 h-6 text-gray-300" />
                           </div>
                         )}
                         <div>
