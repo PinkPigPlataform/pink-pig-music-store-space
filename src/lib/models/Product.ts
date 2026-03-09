@@ -8,7 +8,7 @@ const ProductSchema = new Schema(
         price: { type: Number, required: true, min: 0 },
         currency: { type: String, default: 'BRL' },
         category: { type: Schema.Types.ObjectId, ref: 'Category', required: true },
-        images: [{ type: Schema.Types.ObjectId, ref: 'UploadFile' }],
+        images: [{ type: String }],
         digitalFile: { type: Schema.Types.ObjectId, ref: 'DigitalFile' },
         isDigital: { type: Boolean, default: true },
         active: { type: Boolean, default: true },
@@ -24,4 +24,12 @@ const ProductSchema = new Schema(
 ProductSchema.index({ active: 1, featured: 1 })
 ProductSchema.index({ category: 1, active: 1 })
 
-export default models.Product || model('Product', ProductSchema)
+// Force re-registration in Next.js HMR to avoid stale schema
+if (process.env.NODE_ENV === 'development' && (global as any).mongoose?.models?.Product) {
+    delete (global as any).mongoose.models.Product
+}
+if (models.Product) {
+    delete models.Product
+}
+
+export default model('Product', ProductSchema)
