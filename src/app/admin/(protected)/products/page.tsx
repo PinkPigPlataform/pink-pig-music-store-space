@@ -468,58 +468,71 @@ export default function AdminProductsPage() {
               <div className="pt-2 border-t border-gray-100">
                 <label className="block text-sm font-medium text-gray-700 mb-2">Arquivo digital (PDF, ZIP, WAV...)</label>
                 
-                {/* Drag and Drop Zone */}
-                <div
-                  onClick={() => fileInputRef.current?.click()}
-                  onDragOver={handleFileDragOver}
-                  onDragLeave={handleFileDragLeave}
-                  onDrop={handleFileDrop}
-                  className={`border-2 border-dashed rounded-xl p-4 text-center cursor-pointer transition-colors mb-3 ${
-                    isFileDragging
-                      ? 'border-pink-500 bg-pink-50'
-                      : 'border-gray-200 hover:border-pink-400 hover:bg-pink-50'
-                  }`}
-                >
-                  <input ref={fileInputRef} type="file" className="hidden" onChange={handleDigitalFileUpload} />
-                  
-                  {uploadingFile ? (
-                    <div className="flex flex-col items-center justify-center gap-2 text-pink-500 py-2">
-                       <Loader2 className="w-6 h-6 animate-spin" />
-                       <span className="text-sm font-medium">Enviando para Nuvem (Vercel Blob)...</span>
+                {form.digitalFile && !uploadingFile ? (
+                  <div className="border border-green-200 bg-green-50 rounded-xl p-4 flex items-center justify-between">
+                    <div className="flex items-center gap-3">
+                      <File className="w-8 h-8 text-green-600" />
+                      <div>
+                        <p className="text-sm font-semibold text-green-700 line-clamp-1 max-w-[280px]">
+                          {digitalFiles.find(f => f._id === form.digitalFile)?.name || 'Arquivo selecionado'} 
+                        </p>
+                        <p className="text-xs text-green-600/80">Arquivo vinculado</p>
+                      </div>
                     </div>
-                  ) : form.digitalFile ? (
-                    <div className="flex flex-col items-center gap-1 py-2 text-green-600">
-                       <File className="w-8 h-8" />
-                       <p className="text-sm font-semibold line-clamp-1 max-w-[280px]">
-                         {digitalFiles.find(f => f._id === form.digitalFile)?.name || 'Arquivo selecionado'} 
-                       </p>
-                       <p className="text-xs text-pink-500 hover:underline mt-1" onClick={(e) => { e.stopPropagation(); setForm(f => ({...f, digitalFile: ''}))}}>
-                         Remover do produto
-                       </p>
+                    <button 
+                      type="button" 
+                      onClick={() => setForm(f => ({ ...f, digitalFile: '' }))} 
+                      className="text-xs font-medium text-red-500 hover:text-red-700 hover:bg-red-50 px-2 py-1 rounded transition-colors"
+                    >
+                      Remover
+                    </button>
+                  </div>
+                ) : (
+                  <>
+                    {/* Drag and Drop Zone */}
+                    <div
+                      onClick={() => !uploadingFile && fileInputRef.current?.click()}
+                      onDragOver={handleFileDragOver}
+                      onDragLeave={handleFileDragLeave}
+                      onDrop={handleFileDrop}
+                      className={`border-2 border-dashed rounded-xl p-4 text-center cursor-pointer transition-colors mb-3 ${
+                        isFileDragging
+                          ? 'border-pink-500 bg-pink-50'
+                          : 'border-gray-200 hover:border-pink-400 hover:bg-pink-50'
+                      } ${uploadingFile ? 'opacity-80 pointer-events-none' : ''}`}
+                    >
+                      <input ref={fileInputRef} type="file" className="hidden" onChange={handleDigitalFileUpload} />
+                      
+                      {uploadingFile ? (
+                        <div className="flex flex-col items-center justify-center gap-2 text-pink-500 py-2">
+                           <Loader2 className="w-6 h-6 animate-spin" />
+                           <span className="text-sm font-medium">Enviando para Nuvem (Vercel Blob)...</span>
+                        </div>
+                      ) : (
+                        <div className="flex flex-col items-center gap-1 py-2 text-gray-400">
+                           <Upload className="w-8 h-8 text-gray-300" />
+                           <p className="text-sm">Arraste o arquivo ou clique para fazer upload</p>
+                           <p className="text-xs text-gray-400">Substitui a versão antiga se você estiver atualizando o e-book.</p>
+                        </div>
+                      )}
                     </div>
-                  ) : (
-                    <div className="flex flex-col items-center gap-1 py-2 text-gray-400">
-                       <Upload className="w-8 h-8 text-gray-300" />
-                       <p className="text-sm">Arraste aqui ou clique para fazer upload</p>
-                       <p className="text-xs text-gray-400">Vinculado automaticamente ao salvar</p>
-                    </div>
-                  )}
-                </div>
 
-                {/* Ou select */}
-                <div className="flex items-center gap-3">
-                  <span className="text-xs font-semibold text-gray-400 uppercase tracking-wider shrink-0">Buscar existente:</span>
-                  <select
-                    value={form.digitalFile}
-                    onChange={e => setForm(f => ({ ...f, digitalFile: e.target.value }))}
-                    className="w-full border border-gray-200 rounded-lg px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-pink-500 bg-white"
-                  >
-                    <option value="">Nenhum arquivo vinculado</option>
-                    {digitalFiles.map(f => (
-                      <option key={f._id} value={f._id}>{f.name}</option>
-                    ))}
-                  </select>
-                </div>
+                    {/* Ou select */}
+                    <div className="flex items-center gap-3">
+                      <span className="text-xs font-semibold text-gray-400 uppercase tracking-wider shrink-0">Reaproveitar existente:</span>
+                      <select
+                        value={form.digitalFile}
+                        onChange={e => setForm(f => ({ ...f, digitalFile: e.target.value }))}
+                        className="w-full border border-gray-200 rounded-xl px-3 py-2.5 text-sm focus:outline-none focus:ring-2 focus:ring-pink-500 bg-white"
+                      >
+                        <option value="">Nenhum arquivo vinculado</option>
+                        {digitalFiles.map(f => (
+                          <option key={f._id} value={f._id}>{f.name}</option>
+                        ))}
+                      </select>
+                    </div>
+                  </>
+                )}
               </div>
 
               {/* Toggles */}
