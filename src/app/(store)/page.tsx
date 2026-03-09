@@ -5,17 +5,17 @@ import { formatPrice } from '@/lib/utils'
 import { ArrowRight, ShieldCheck, Download, Zap } from 'lucide-react'
 import Image from 'next/image'
 
-async function getFeaturedProducts() {
+async function getHomeProducts() {
   await connectMongo()
-  return ProductModel.find({ active: true, featured: true })
+  return ProductModel.find({ active: true })
     .populate('category', 'label')
-    .sort({ createdAt: -1 })
+    .sort({ featured: -1, createdAt: -1 })
     .limit(8)
     .lean()
 }
 
 export default async function StorePage() {
-  const products = await getFeaturedProducts()
+  const products = await getHomeProducts()
 
   return (
     <div>
@@ -66,7 +66,7 @@ export default async function StorePage() {
         <section className="py-16 px-4 bg-gray-50">
           <div className="max-w-6xl mx-auto">
             <div className="flex items-center justify-between mb-8">
-              <h2 className="text-2xl font-bold text-gray-900">Em destaque</h2>
+              <h2 className="text-2xl font-bold text-gray-900">Novidades &amp; Destaques</h2>
               <Link
                 href="/products"
                 className="text-pink-500 hover:text-pink-600 font-medium flex items-center gap-1"

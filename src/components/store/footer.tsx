@@ -1,3 +1,5 @@
+import Link from 'next/link'
+
 export default function StoreFooter() {
   const year = new Date().getFullYear()
   const name = process.env.NEXT_PUBLIC_STORE_NAME || 'Loja Digital'
@@ -9,9 +11,9 @@ export default function StoreFooter() {
           © {year} {name}. Todos os direitos reservados.
         </p>
         <div className="flex gap-6 text-sm">
-          <a href="#" className="hover:text-white transition-colors">Termos</a>
-          <a href="#" className="hover:text-white transition-colors">Privacidade</a>
-          <a href="#" className="hover:text-white transition-colors">Contato</a>
+          <Link href="/termos" className="hover:text-white transition-colors">Termos</Link>
+          <Link href="/privacidade" className="hover:text-white transition-colors">Privacidade</Link>
+          <Link href="/contato" className="hover:text-white transition-colors">Contato</Link>
         </div>
       </div>
     </footer>
