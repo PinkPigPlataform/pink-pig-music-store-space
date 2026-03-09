@@ -49,6 +49,7 @@ export default function AdminProductsPage() {
   const [form, setForm] = useState<FormState>(EMPTY_FORM)
   const [saving, setSaving] = useState(false)
   const [uploading, setUploading] = useState(false)
+  const [isDragging, setIsDragging] = useState(false)
   const imageRef = useRef<HTMLInputElement>(null)
 
   // ── Data loading ─────────────────────────────────────────
@@ -97,22 +98,52 @@ export default function AdminProductsPage() {
   function closeModal() { setModalOpen(false); setEditing(null) }
 
   // ── Image upload ──────────────────────────────────────────
-  async function handleImageUpload(e: React.ChangeEvent<HTMLInputElement>) {
-    const file = e.target.files?.[0]
+  async function processImage(file: File) {
     if (!file) return
     setUploading(true)
     const fd = new FormData()
     fd.append('file', file)
-    const res = await fetch('/api/admin/upload/image', { method: 'POST', body: fd })
-    const data = await res.json()
-    if (res.ok) {
-      setForm(f => ({ ...f, imageUrl: data.url }))
-      toast.success('Imagem enviada!')
-    } else {
-      toast.error(data.error ?? 'Erro no upload')
+    try {
+      const res = await fetch('/api/admin/upload/image', { method: 'POST', body: fd })
+      const data = await res.json()
+      if (res.ok) {
+        setForm(f => ({ ...f, imageUrl: data.url }))
+        toast.success('Imagem enviada!')
+      } else {
+        toast.error(data.error ?? 'Erro no upload')
+      }
+    } catch {
+      toast.error('Erro de conexão ao enviar imagem')
+    } finally {
+      setUploading(false)
+      if (imageRef.current) imageRef.current.value = ''
     }
-    setUploading(false)
-    if (imageRef.current) imageRef.current.value = ''
+  }
+
+  function handleImageUpload(e: React.ChangeEvent<HTMLInputElement>) {
+    const file = e.target.files?.[0]
+    if (file) processImage(file)
+  }
+
+  function handleDragOver(e: React.DragEvent) {
+    e.preventDefault()
+    setIsDragging(true)
+  }
+
+  function handleDragLeave(e: React.DragEvent) {
+    e.preventDefault()
+    setIsDragging(false)
+  }
+
+  function handleDrop(e: React.DragEvent) {
+    e.preventDefault()
+    setIsDragging(false)
+    const file = e.dataTransfer.files?.[0]
+    if (file && file.type.startsWith('image/')) {
+      processImage(file)
+    } else if (file) {
+      toast.error('Por favor, selecione uma imagem válida.')
+    }
   }
 
   // ── Save ──────────────────────────────────────────────────
@@ -287,7 +318,14 @@ export default function AdminProductsPage() {
                 <label className="block text-sm font-medium text-gray-700 mb-2">Imagem do produto</label>
                 <div
                   onClick={() => imageRef.current?.click()}
-                  className="border-2 border-dashed border-gray-200 rounded-xl p-4 text-center cursor-pointer hover:border-pink-400 hover:bg-pink-50 transition-colors"
+                  onDragOver={handleDragOver}
+                  onDragLeave={handleDragLeave}
+                  onDrop={handleDrop}
+                  className={`border-2 border-dashed rounded-xl p-4 text-center cursor-pointer transition-colors ${
+                    isDragging
+                      ? 'border-pink-500 bg-pink-50'
+                      : 'border-gray-200 hover:border-pink-400 hover:bg-pink-50'
+                  }`}
                 >
                   <input ref={imageRef} type="file" accept="image/*" className="hidden" onChange={handleImageUpload} />
                   {form.imageUrl ? (
