@@ -13,7 +13,6 @@ export async function GET(
     await connectMongo()
     const product = await ProductModel.findById(params.id)
         .populate('category', 'label value')
-        .populate('images', 'url width height')
         .populate('digitalFile', 'name url size')
         .lean()
 

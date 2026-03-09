@@ -17,7 +17,7 @@ interface Product {
   featured: boolean
   category?: { _id: string; label: string }
   digitalFile?: { _id: string; name: string }
-  images?: { url: string }[]
+  images?: string[]
   description?: string
   createdAt: string
 }
@@ -93,7 +93,7 @@ export default function AdminProductsPage() {
       digitalFile: p.digitalFile?._id ?? '',
       active: p.active,
       featured: p.featured,
-      imageUrl: p.images?.[0]?.url ?? '',
+      imageUrl: p.images?.[0] ?? '',
     })
     setModalOpen(true)
   }
@@ -295,8 +295,8 @@ export default function AdminProductsPage() {
                   <tr key={p._id} className="hover:bg-gray-50 transition-colors">
                     <td className="px-5 py-3.5">
                       <div className="flex items-center gap-3">
-                        {p.images?.[0]?.url ? (
-                          <img src={p.images[0].url} alt={p.name} className="w-10 h-10 rounded-lg object-cover shrink-0" />
+                        {p.images?.[0] ? (
+                          <img src={p.images[0]} alt={p.name} className="w-10 h-10 rounded-lg object-cover shrink-0" />
                         ) : (
                           <div className="w-10 h-10 rounded-lg bg-gray-100 flex items-center justify-center shrink-0">
                             <Package className="w-5 h-5 text-gray-300" />

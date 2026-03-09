@@ -35,7 +35,6 @@ export async function GET(req: Request) {
     const [products, total] = await Promise.all([
         ProductModel.find(query)
             .populate('category', 'label value')
-            .populate('images', 'url')
             .sort({ createdAt: -1 })
             .skip((page - 1) * limit)
             .limit(limit)
