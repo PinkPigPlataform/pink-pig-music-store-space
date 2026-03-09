@@ -46,13 +46,13 @@ export default async function ProductPage({
       <div className="grid grid-cols-1 md:grid-cols-2 gap-10">
         {/* Images */}
         <div className="space-y-4">
-          <div className="aspect-square bg-gray-100 rounded-2xl overflow-hidden relative">
+          <div className="aspect-square bg-gradient-to-br from-white via-gray-50/80 to-gray-100/50 rounded-3xl overflow-hidden relative border border-white shadow-[0_8px_40px_-10px_rgba(0,0,0,0.08)] ring-1 ring-black/5 flex items-center justify-center">
             {p.images?.[0] ? (
               <Image
                 src={p.images[0]}
                 alt={p.name}
                 fill
-                className="object-contain p-6"
+                className="object-contain p-8 drop-shadow-[0_15px_25px_rgba(0,0,0,0.15)] transition-transform duration-500 hover:scale-[1.03]"
                 priority
               />
             ) : (
@@ -64,8 +64,8 @@ export default async function ProductPage({
           {p.images.length > 1 && (
             <div className="grid grid-cols-4 gap-2">
               {p.images.slice(1, 5).map((img, i) => (
-                <div key={i} className="aspect-square rounded-lg overflow-hidden relative bg-white border border-gray-200">
-                  <Image src={img} alt={`${p.name} ${i + 2}`} fill className="object-contain p-2" />
+                <div key={i} className="aspect-square rounded-2xl overflow-hidden relative bg-gradient-to-br from-white to-gray-50 border border-gray-100 shadow-sm hover:shadow-md transition-all cursor-pointer ring-1 ring-black/5">
+                  <Image src={img} alt={`${p.name} ${i + 2}`} fill className="object-contain p-3 drop-shadow-sm" />
                 </div>
               ))}
             </div>
