@@ -74,41 +74,62 @@ export default async function ProductPage({
 
         {/* Info */}
         <div className="flex flex-col">
-          {p.category && (
-            <span className="text-sm text-pink-500 font-medium mb-2">
-              {p.category.label}
-            </span>
-          )}
-          <h1 className="text-3xl font-bold text-gray-900">{p.name}</h1>
-
-          <div className="mt-4 text-4xl font-extrabold text-gray-900">
-            {formatPrice(Math.round(p.price * 100))}
+          <div>
+            {p.category && (
+              <span className="inline-block px-3 py-1 bg-pink-50 text-pink-600 text-xs font-bold uppercase tracking-wider rounded-full mb-4">
+                {p.category.label}
+              </span>
+            )}
+            <h1 className="text-4xl sm:text-5xl font-extrabold text-gray-900 tracking-tight leading-tight mb-4">
+              {p.name}
+            </h1>
           </div>
 
+          <div className="mt-2 flex items-baseline gap-2">
+            <span className="text-5xl font-black text-gray-900 tracking-tight">
+              {formatPrice(Math.round(p.price * 100))}
+            </span>
+          </div>
+
+          {/* Buy Box */}
+          <div className="mt-8 bg-gray-50/80 border border-gray-100 rounded-2xl p-6 shadow-sm">
+            <div className="mb-6">
+              <AddToCartButton
+                product={{
+                  id: p._id.toString(),
+                  name: p.name,
+                  price: p.price,
+                  slug: p.slug,
+                  image: p.images?.[0],
+                }}
+              />
+            </div>
+            
+            <div className="space-y-4 pt-4 border-t border-gray-200/60">
+              <div className="flex items-center gap-4 text-sm text-gray-700 font-medium">
+                <div className="w-10 h-10 rounded-full bg-green-100 flex items-center justify-center shrink-0">
+                  <ShieldCheck className="w-5 h-5 text-green-600" />
+                </div>
+                Pagamento 100% seguro via Stripe
+              </div>
+              <div className="flex items-center gap-4 text-sm text-gray-700 font-medium">
+                <div className="w-10 h-10 rounded-full bg-pink-100 flex items-center justify-center shrink-0">
+                  <Download className="w-5 h-5 text-pink-600" />
+                </div>
+                Download imediato após a confirmação
+              </div>
+            </div>
+          </div>
+
+          {/* Description */}
           {p.description && (
-            <div className="mt-6 text-gray-600 leading-relaxed whitespace-pre-wrap font-medium">
-              {p.description}
+            <div className="mt-12 pt-10 border-t border-gray-200">
+              <h3 className="text-2xl font-bold text-gray-900 mb-6">Sobre o produto</h3>
+              <div className="text-gray-600 leading-relaxed whitespace-pre-wrap text-lg">
+                {p.description}
+              </div>
             </div>
           )}
-
-          <AddToCartButton
-            product={{
-              id: p._id.toString(),
-              name: p.name,
-              price: p.price,
-              slug: p.slug,
-              image: p.images?.[0],
-            }}
-          />
-
-          <div className="mt-6 flex items-center gap-2 text-sm text-gray-500">
-            <ShieldCheck className="w-4 h-4 text-green-500" />
-            Pagamento seguro via Stripe
-          </div>
-          <div className="mt-2 flex items-center gap-2 text-sm text-gray-500">
-            <Download className="w-4 h-4 text-pink-400" />
-            Download imediato após confirmação
-          </div>
         </div>
       </div>
     </div>
