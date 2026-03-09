@@ -3,7 +3,7 @@
 import { useEffect, useRef, useState } from 'react'
 import { AdminHeader } from '@/components/admin/header'
 import { formatPrice, formatDate } from '@/lib/utils'
-import { Plus, Search, Edit, Trash2, Package, X, Loader2, ImagePlus, Star } from 'lucide-react'
+import { Plus, Search, Edit, Trash2, Package, X, Loader2, ImagePlus, Star, File, Upload } from 'lucide-react'
 import { toast } from 'sonner'
 
 // ─── Types ───────────────────────────────────────────────
@@ -50,7 +50,10 @@ export default function AdminProductsPage() {
   const [saving, setSaving] = useState(false)
   const [uploading, setUploading] = useState(false)
   const [isDragging, setIsDragging] = useState(false)
+  const [uploadingFile, setUploadingFile] = useState(false)
+  const [isFileDragging, setIsFileDragging] = useState(false)
   const imageRef = useRef<HTMLInputElement>(null)
+  const fileInputRef = useRef<HTMLInputElement>(null)
 
   // ── Data loading ─────────────────────────────────────────
   async function loadProducts(q = '') {
@@ -144,6 +147,53 @@ export default function AdminProductsPage() {
     } else if (file) {
       toast.error('Por favor, selecione uma imagem válida.')
     }
+  }
+
+  // ── Digital File upload ───────────────────────────────────
+  async function processDigitalFile(file: File) {
+    if (!file) return
+    setUploadingFile(true)
+    const fd = new FormData()
+    fd.append('file', file)
+    try {
+      const res = await fetch('/api/admin/files', { method: 'POST', body: fd })
+      const data = await res.json()
+      if (res.ok) {
+        const newFile = data.data
+        setDigitalFiles(prev => [newFile, ...prev])
+        setForm(f => ({ ...f, digitalFile: newFile._id }))
+        toast.success('Arquivo digital enviado!')
+      } else {
+        toast.error(data.error ?? 'Erro no envio do arquivo')
+      }
+    } catch {
+      toast.error('Erro de conexão ao enviar arquivo')
+    } finally {
+      setUploadingFile(false)
+      if (fileInputRef.current) fileInputRef.current.value = ''
+    }
+  }
+
+  function handleDigitalFileUpload(e: React.ChangeEvent<HTMLInputElement>) {
+    const file = e.target.files?.[0]
+    if (file) processDigitalFile(file)
+  }
+
+  function handleFileDragOver(e: React.DragEvent) {
+    e.preventDefault()
+    setIsFileDragging(true)
+  }
+
+  function handleFileDragLeave(e: React.DragEvent) {
+    e.preventDefault()
+    setIsFileDragging(false)
+  }
+
+  function handleFileDrop(e: React.DragEvent) {
+    e.preventDefault()
+    setIsFileDragging(false)
+    const file = e.dataTransfer.files?.[0]
+    if (file) processDigitalFile(file)
   }
 
   // ── Save ──────────────────────────────────────────────────
@@ -415,22 +465,61 @@ export default function AdminProductsPage() {
               </div>
 
               {/* Digital File */}
-              <div>
-                <label className="block text-sm font-medium text-gray-700 mb-1">Arquivo digital</label>
-                <select
-                  value={form.digitalFile}
-                  onChange={e => setForm(f => ({ ...f, digitalFile: e.target.value }))}
-                  className="w-full border border-gray-200 rounded-lg px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-pink-500 bg-white"
+              <div className="pt-2 border-t border-gray-100">
+                <label className="block text-sm font-medium text-gray-700 mb-2">Arquivo digital (PDF, ZIP, WAV...)</label>
+                
+                {/* Drag and Drop Zone */}
+                <div
+                  onClick={() => fileInputRef.current?.click()}
+                  onDragOver={handleFileDragOver}
+                  onDragLeave={handleFileDragLeave}
+                  onDrop={handleFileDrop}
+                  className={`border-2 border-dashed rounded-xl p-4 text-center cursor-pointer transition-colors mb-3 ${
+                    isFileDragging
+                      ? 'border-pink-500 bg-pink-50'
+                      : 'border-gray-200 hover:border-pink-400 hover:bg-pink-50'
+                  }`}
                 >
-                  <option value="">Nenhum arquivo vinculado</option>
-                  {digitalFiles.map(f => (
-                    <option key={f._id} value={f._id}>{f.name}</option>
-                  ))}
-                </select>
-                <p className="text-xs text-gray-400 mt-1">
-                  Não encontrou? Faça upload em{' '}
-                  <a href="/admin/files" target="_blank" className="text-pink-500 hover:underline">Arquivos Digitais</a> primeiro.
-                </p>
+                  <input ref={fileInputRef} type="file" className="hidden" onChange={handleDigitalFileUpload} />
+                  
+                  {uploadingFile ? (
+                    <div className="flex flex-col items-center justify-center gap-2 text-pink-500 py-2">
+                       <Loader2 className="w-6 h-6 animate-spin" />
+                       <span className="text-sm font-medium">Enviando para Nuvem (Vercel Blob)...</span>
+                    </div>
+                  ) : form.digitalFile ? (
+                    <div className="flex flex-col items-center gap-1 py-2 text-green-600">
+                       <File className="w-8 h-8" />
+                       <p className="text-sm font-semibold line-clamp-1 max-w-[280px]">
+                         {digitalFiles.find(f => f._id === form.digitalFile)?.name || 'Arquivo selecionado'} 
+                       </p>
+                       <p className="text-xs text-pink-500 hover:underline mt-1" onClick={(e) => { e.stopPropagation(); setForm(f => ({...f, digitalFile: ''}))}}>
+                         Remover do produto
+                       </p>
+                    </div>
+                  ) : (
+                    <div className="flex flex-col items-center gap-1 py-2 text-gray-400">
+                       <Upload className="w-8 h-8 text-gray-300" />
+                       <p className="text-sm">Arraste aqui ou clique para fazer upload</p>
+                       <p className="text-xs text-gray-400">Vinculado automaticamente ao salvar</p>
+                    </div>
+                  )}
+                </div>
+
+                {/* Ou select */}
+                <div className="flex items-center gap-3">
+                  <span className="text-xs font-semibold text-gray-400 uppercase tracking-wider shrink-0">Buscar existente:</span>
+                  <select
+                    value={form.digitalFile}
+                    onChange={e => setForm(f => ({ ...f, digitalFile: e.target.value }))}
+                    className="w-full border border-gray-200 rounded-lg px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-pink-500 bg-white"
+                  >
+                    <option value="">Nenhum arquivo vinculado</option>
+                    {digitalFiles.map(f => (
+                      <option key={f._id} value={f._id}>{f.name}</option>
+                    ))}
+                  </select>
+                </div>
               </div>
 
               {/* Toggles */}
