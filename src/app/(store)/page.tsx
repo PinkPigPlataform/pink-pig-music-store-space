@@ -8,7 +8,6 @@ import Image from 'next/image'
 async function getFeaturedProducts() {
   await connectMongo()
   return ProductModel.find({ active: true, featured: true })
-    .populate('images', 'url')
     .populate('category', 'label')
     .sort({ createdAt: -1 })
     .limit(8)
@@ -81,7 +80,7 @@ export default async function StorePage() {
                 name: string
                 slug: string
                 price: number
-                images: Array<{ url: string }>
+                images: string[]
                 category?: { label: string }
               }>).map((product) => (
                 <Link
@@ -90,12 +89,12 @@ export default async function StorePage() {
                   className="group bg-white rounded-xl overflow-hidden border hover:shadow-lg transition-shadow"
                 >
                   <div className="aspect-square bg-gray-100 relative overflow-hidden">
-                    {product.images[0] ? (
+                    {product.images?.[0] ? (
                       <Image
-                        src={product.images[0].url}
+                        src={product.images[0]}
                         alt={product.name}
                         fill
-                        className="object-cover group-hover:scale-105 transition-transform duration-300"
+                        className="object-contain p-4 group-hover:scale-105 transition-transform duration-300"
                       />
                     ) : (
                       <div className="w-full h-full flex items-center justify-center text-gray-300">

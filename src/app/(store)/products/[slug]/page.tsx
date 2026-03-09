@@ -10,7 +10,6 @@ async function getProduct(slug: string) {
   await connectMongo()
   return ProductModel.findOne({ slug, active: true })
     .populate('category', 'label value')
-    .populate('images', 'url width height')
     .lean()
 }
 
@@ -38,7 +37,7 @@ export default async function ProductPage({
     slug: string
     description?: string
     price: number
-    images: Array<{ url: string; width?: number; height?: number }>
+    images: string[]
     category?: { label: string }
   }
 
@@ -48,12 +47,12 @@ export default async function ProductPage({
         {/* Images */}
         <div className="space-y-4">
           <div className="aspect-square bg-gray-100 rounded-2xl overflow-hidden relative">
-            {p.images[0] ? (
+            {p.images?.[0] ? (
               <Image
-                src={p.images[0].url}
+                src={p.images[0]}
                 alt={p.name}
                 fill
-                className="object-cover"
+                className="object-contain p-6"
                 priority
               />
             ) : (
@@ -65,8 +64,8 @@ export default async function ProductPage({
           {p.images.length > 1 && (
             <div className="grid grid-cols-4 gap-2">
               {p.images.slice(1, 5).map((img, i) => (
-                <div key={i} className="aspect-square rounded-lg overflow-hidden relative bg-gray-100">
-                  <Image src={img.url} alt={`${p.name} ${i + 2}`} fill className="object-cover" />
+                <div key={i} className="aspect-square rounded-lg overflow-hidden relative bg-white border border-gray-200">
+                  <Image src={img} alt={`${p.name} ${i + 2}`} fill className="object-contain p-2" />
                 </div>
               ))}
             </div>
@@ -96,7 +95,7 @@ export default async function ProductPage({
               name: p.name,
               price: p.price,
               slug: p.slug,
-              image: p.images[0]?.url,
+              image: p.images?.[0],
             }}
           />
 

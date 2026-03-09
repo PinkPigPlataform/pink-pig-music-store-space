@@ -17,7 +17,6 @@ async function getProducts(category?: string) {
 
   return ProductModel.find(query)
     .populate('category', 'label value')
-    .populate('images', 'url')
     .sort({ featured: -1, createdAt: -1 })
     .lean()
 }
@@ -85,7 +84,7 @@ export default async function ProductsPage({
             name: string
             slug: string
             price: number
-            images: Array<{ url: string }>
+            images: string[]
             category?: { label: string }
             featured?: boolean
           }>).map((product) => (
@@ -95,12 +94,12 @@ export default async function ProductsPage({
               className="group bg-white rounded-xl overflow-hidden border hover:shadow-lg transition-all duration-200 hover:-translate-y-0.5"
             >
               <div className="aspect-square bg-gray-50 relative overflow-hidden">
-                {product.images[0] ? (
+                {product.images?.[0] ? (
                   <Image
-                    src={product.images[0].url}
+                    src={product.images[0]}
                     alt={product.name}
                     fill
-                    className="object-cover group-hover:scale-105 transition-transform duration-300"
+                    className="object-contain p-4 group-hover:scale-105 transition-transform duration-300"
                   />
                 ) : (
                   <div className="w-full h-full flex items-center justify-center text-gray-200">
