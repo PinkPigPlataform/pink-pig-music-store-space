@@ -1,5 +1,6 @@
 import { connectMongo } from '@/lib/mongodb'
 import ProductModel from '@/lib/models/Product'
+import '@/lib/models/Category'
 import { formatPrice } from '@/lib/utils'
 import { notFound } from 'next/navigation'
 import Image from 'next/image'

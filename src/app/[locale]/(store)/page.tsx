@@ -1,15 +1,16 @@
 import Link from 'next/link'
 import { connectMongo } from '@/lib/mongodb'
 import ProductModel from '@/lib/models/Product'
+import '@/lib/models/Category'
 import { formatPrice } from '@/lib/utils'
 import { ArrowRight, ShieldCheck, Download, Zap } from 'lucide-react'
 import Image from 'next/image'
 
 async function getHomeProducts(locale: string) {
   await connectMongo()
-  return ProductModel.find({ active: true, locale })
+  return ProductModel.find({ active: true, locale, featured: true })
     .populate('category', 'label')
-    .sort({ featured: -1, createdAt: -1 })
+    .sort({ createdAt: -1 })
     .limit(8)
     .lean()
 }
