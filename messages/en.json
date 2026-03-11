@@ -20,5 +20,29 @@
         "terms": "Terms",
         "privacy": "Privacy",
         "contact": "Contact"
+    },
+    "HomePage": {
+        "heroTitle": "Premium digital products",
+        "heroHighlight": "for musicians",
+        "heroSubtitle": "Instant downloads. Immediate access after payment.",
+        "heroCta": "Browse products",
+        "feature1Title": "Instant download",
+        "feature1Desc": "Access your files immediately after payment",
+        "feature2Title": "Secure payment",
+        "feature2Desc": "Processed by Stripe with end-to-end encryption",
+        "feature3Title": "Lifetime access",
+        "feature3Desc": "Your files are available forever in your account",
+        "sectionTitle": "New & Featured",
+        "seeAll": "See all"
+    },
+    "ProductsPage": {
+        "title": "Products",
+        "all": "All",
+        "featured": "Featured",
+        "noProducts": "No products found",
+        "seeAll": "See all products",
+        "securePayment": "100% secure payment via Stripe",
+        "instantDownload": "Immediate download after confirmation",
+        "aboutContent": "About the content"
     }
 }

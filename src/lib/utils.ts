@@ -19,9 +19,10 @@ export function generateSlug(text: string): string {
 export function formatPrice(
     cents: number,
     currency = 'BRL',
-    locale = 'pt-BR'
+    locale?: string
 ): string {
-    return new Intl.NumberFormat(locale, {
+    const resolvedLocale = locale ?? (currency === 'USD' ? 'en-US' : 'pt-BR')
+    return new Intl.NumberFormat(resolvedLocale, {
         style: 'currency',
         currency,
     }).format(cents / 100)

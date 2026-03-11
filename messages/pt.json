@@ -20,5 +20,29 @@
         "terms": "Termos",
         "privacy": "Privacidade",
         "contact": "Contato"
+    },
+    "HomePage": {
+        "heroTitle": "Produtos digitais de",
+        "heroHighlight": "alta qualidade",
+        "heroSubtitle": "Downloads instantâneos. Acesso imediato após o pagamento.",
+        "heroCta": "Ver produtos",
+        "feature1Title": "Download instantâneo",
+        "feature1Desc": "Acesse seus arquivos imediatamente após o pagamento",
+        "feature2Title": "Pagamento seguro",
+        "feature2Desc": "Processado pelo Stripe com criptografia de ponta a ponta",
+        "feature3Title": "Acesso vitalício",
+        "feature3Desc": "Seus arquivos ficam disponíveis para sempre na sua conta",
+        "sectionTitle": "Novidades & Destaques",
+        "seeAll": "Ver todos"
+    },
+    "ProductsPage": {
+        "title": "Produtos",
+        "all": "Todos",
+        "featured": "Destaque",
+        "noProducts": "Nenhum produto encontrado",
+        "seeAll": "Ver todos os produtos",
+        "securePayment": "Pagamento 100% seguro via Stripe",
+        "instantDownload": "Download imediato após a confirmação",
+        "aboutContent": "Sobre o conteúdo"
     }
 }

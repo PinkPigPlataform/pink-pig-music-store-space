@@ -5,15 +5,14 @@ import Link from 'next/link'
 import Image from 'next/image'
 import { formatPrice } from '@/lib/utils'
 import { Download } from 'lucide-react'
+import { getTranslations } from 'next-intl/server'
 
 async function getProducts(locale: string, category?: string) {
   await connectMongo()
   const query: Record<string, unknown> = { active: true, locale }
 
   if (category) {
-    const cat = await CategoryModel.findOne({ 
-      value: category 
-    })
+    const cat = await CategoryModel.findOne({ value: category, locale })
     if (cat) query.category = cat._id
   }
 
@@ -36,16 +35,17 @@ export default async function ProductsPage({
   params: Promise<{ locale: string }>
 }) {
   const [{ category }, { locale }] = await Promise.all([searchParams, params])
-  const [products, categories] = await Promise.all([
+  const [products, categories, t] = await Promise.all([
     getProducts(locale, category),
     getCategories(locale),
+    getTranslations('ProductsPage'),
   ])
 
-  // Removed t function as schema is plain string now
+  const currency = locale === 'en' ? 'USD' : 'BRL'
 
   return (
     <div className="max-w-6xl mx-auto px-4 py-10">
-      <h1 className="text-3xl font-bold text-gray-900 mb-6">Produtos</h1>
+      <h1 className="text-3xl font-bold text-gray-900 mb-6">{t('title')}</h1>
 
       {/* Category filter */}
       <div className="flex flex-wrap gap-2 mb-8">
@@ -57,35 +57,33 @@ export default async function ProductsPage({
               : 'bg-gray-100 text-gray-700 hover:bg-gray-200'
           }`}
         >
-          Todos
+          {t('all')}
         </Link>
-        {(categories as any[]).map(
-          (cat) => {
-            const catValue = cat.value
-            const catLabel = cat.label
-            return (
-              <Link
-                key={cat._id.toString()}
-                href={`/products?category=${catValue}`}
-                className={`px-4 py-1.5 rounded-full text-sm font-medium transition-colors ${
-                  category === catValue
-                    ? 'bg-pink-500 text-white'
-                    : 'bg-gray-100 text-gray-700 hover:bg-gray-200'
-                }`}
-              >
-                {catLabel}
-              </Link>
-            )
-          }
-        )}
+        {(categories as any[]).map((cat) => {
+          const catValue = cat.value
+          const catLabel = cat.label
+          return (
+            <Link
+              key={cat._id.toString()}
+              href={`/products?category=${catValue}`}
+              className={`px-4 py-1.5 rounded-full text-sm font-medium transition-colors ${
+                category === catValue
+                  ? 'bg-pink-500 text-white'
+                  : 'bg-gray-100 text-gray-700 hover:bg-gray-200'
+              }`}
+            >
+              {catLabel}
+            </Link>
+          )
+        })}
       </div>
 
       {/* Product grid */}
       {products.length === 0 ? (
         <div className="text-center py-20">
-          <p className="text-gray-500 text-lg">Nenhum produto encontrado</p>
+          <p className="text-gray-500 text-lg">{t('noProducts')}</p>
           <Link href="/products" className="text-pink-500 mt-2 inline-block">
-            Ver todos os produtos
+            {t('seeAll')}
           </Link>
         </div>
       ) : (
@@ -116,7 +114,7 @@ export default async function ProductsPage({
                   )}
                   {product.featured && (
                     <span className="absolute top-2 left-2 bg-pink-500 text-white text-xs font-semibold px-2 py-0.5 rounded-full">
-                      Destaque
+                      {t('featured')}
                     </span>
                   )}
                 </div>
@@ -130,7 +128,7 @@ export default async function ProductsPage({
                     {pName}
                   </h2>
                   <p className="mt-2 text-lg font-bold">
-                    {formatPrice(Math.round(product.price * 100))}
+                    {formatPrice(Math.round(product.price * 100), currency)}
                   </p>
                 </div>
               </Link>
