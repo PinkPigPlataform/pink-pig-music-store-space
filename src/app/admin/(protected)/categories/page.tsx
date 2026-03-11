@@ -11,9 +11,10 @@ import { toast } from 'sonner'
 // ─── Types ─────────────────────────────────────────────────
 interface Category {
   _id: string
-  label: string
-  value: string
-  description?: string
+  label: any
+  value: any
+  description?: any
+  locale: string
   active: boolean
   order: number
   parent: { _id: string; label: string; value: string } | null
@@ -23,7 +24,7 @@ interface TreeNode extends Category {
   children: TreeNode[]
 }
 
-const EMPTY_FORM = { label: '', description: '', active: true, parent: '' }
+const EMPTY_FORM = { label: '', description: '', locale: 'pt', active: true, parent: '' }
 
 // ─── Build tree from flat list ─────────────────────────────
 function buildTree(flat: Category[]): TreeNode[] {
@@ -78,8 +79,9 @@ export default function AdminCategoriesPage() {
   function openEdit(cat: Category) {
     setEditing(cat)
     setForm({
-      label: cat.label,
-      description: cat.description ?? '',
+      label: cat.label || '',
+      description: cat.description || '',
+      locale: cat.locale || 'pt',
       active: cat.active,
       parent: cat.parent?._id ?? '',
     })
@@ -100,6 +102,7 @@ export default function AdminCategoriesPage() {
 
     const payload = {
       label: form.label.trim(),
+      locale: form.locale,
       description: form.description.trim() || undefined,
       active: form.active,
       parent: form.parent || null,
@@ -134,9 +137,10 @@ export default function AdminCategoriesPage() {
   // ── Delete ────────────────────────────────────────────────
   async function handleDelete(cat: Category) {
     const hasChildren = categories.some(c => c.parent?._id === cat._id)
+    const catName = cat.label
     const msg = hasChildren
-      ? `"${cat.label}" tem subcategorias que serão movidas para o nível raiz. Confirmar exclusão?`
-      : `Deletar "${cat.label}"? Esta ação não pode ser desfeita.`
+      ? `"${catName}" tem subcategorias que serão movidas para o nivel raiz. Confirmar exclusão?`
+      : `Deletar "${catName}"? Esta ação não pode ser desfeita.`
     if (!confirm(msg)) return
 
     try {
@@ -201,11 +205,14 @@ export default function AdminCategoriesPage() {
           <div className="flex-1 min-w-0">
             <div className="flex flex-wrap items-center gap-x-2 gap-y-0.5">
               <span className="font-medium text-gray-900 text-sm">{node.label}</span>
-              {node.description && (
+              {(node.description) && (
                 <span className="text-xs text-gray-400 hidden sm:inline">{node.description}</span>
               )}
             </div>
             <span className="text-xs text-gray-300 font-mono">{node.value}</span>
+            <span className="ml-2 inline-flex items-center px-1.5 py-0.5 rounded text-[10px] font-semibold bg-gray-100 text-gray-600 uppercase">
+              {node.locale || 'pt'}
+            </span>
           </div>
 
           {/* Children count badge */}
@@ -343,26 +350,42 @@ export default function AdminCategoriesPage() {
                   <option value="">— Categoria raiz (sem pai) —</option>
                   {rootCats
                     .filter(c => c._id !== editing?._id)
-                    .map(c => (
-                      <option key={c._id} value={c._id}>{c.label}</option>
-                    ))
+                    .map(c => {
+                      const cLabel = c.label;
+                      return <option key={c._id} value={c._id}>{cLabel}</option>
+                    })
                   }
                 </select>
               </div>
 
-              {/* Name */}
-              <div>
-                <label className="block text-sm font-medium text-gray-700 mb-1.5">
-                  Nome <span className="text-red-400">*</span>
-                </label>
-                <input
-                  type="text"
-                  required
-                  value={form.label}
-                  onChange={e => setForm(f => ({ ...f, label: e.target.value }))}
-                  placeholder="Ex: Beats, Trap, Lofi..."
-                  className="w-full border border-gray-200 rounded-xl px-4 py-2.5 text-sm focus:outline-none focus:ring-2 focus:ring-pink-500"
-                />
+              {/* Name & Locale */}
+              <div className="grid grid-cols-2 gap-4">
+                <div>
+                  <label className="block text-sm font-medium text-gray-700 mb-1.5">
+                    Nome <span className="text-red-400">*</span>
+                  </label>
+                  <input
+                    type="text"
+                    required
+                    value={form.label}
+                    onChange={e => setForm(f => ({ ...f, label: e.target.value }))}
+                    placeholder="Ex: Beats, Trap..."
+                    className="w-full border border-gray-200 rounded-xl px-4 py-2.5 text-sm focus:outline-none focus:ring-2 focus:ring-pink-500"
+                  />
+                </div>
+                <div>
+                  <label className="block text-sm font-medium text-gray-700 mb-1.5">
+                    Idioma <span className="text-red-400">*</span>
+                  </label>
+                  <select
+                    value={form.locale}
+                    onChange={e => setForm(f => ({ ...f, locale: e.target.value }))}
+                    className="w-full border border-gray-200 rounded-xl px-4 py-2.5 text-sm focus:outline-none focus:ring-2 focus:ring-pink-500 bg-white"
+                  >
+                    <option value="pt">Português (PT)</option>
+                    <option value="en">Inglês (EN)</option>
+                  </select>
+                </div>
               </div>
 
               {/* Description */}
@@ -374,7 +397,7 @@ export default function AdminCategoriesPage() {
                   type="text"
                   value={form.description}
                   onChange={e => setForm(f => ({ ...f, description: e.target.value }))}
-                  placeholder="Breve descrição da categoria..."
+                  placeholder="Breve descrição..."
                   className="w-full border border-gray-200 rounded-xl px-4 py-2.5 text-sm focus:outline-none focus:ring-2 focus:ring-pink-500"
                 />
               </div>

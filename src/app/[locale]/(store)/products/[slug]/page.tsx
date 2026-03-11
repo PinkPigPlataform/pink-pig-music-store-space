@@ -6,40 +6,47 @@ import Image from 'next/image'
 import { Download, ShieldCheck } from 'lucide-react'
 import AddToCartButton from './add-to-cart-button'
 
-async function getProduct(slug: string) {
+async function getProduct(slug: string, locale: string) {
   await connectMongo()
-  return ProductModel.findOne({ slug, active: true })
+  return ProductModel.findOne({ 
+    slug: slug,
+    locale: locale,
+    active: true 
+  })
     .populate('category', 'label value')
     .lean()
 }
 
-export async function generateMetadata({ params }: { params: { slug: string } }) {
-  const product = await getProduct(params.slug)
+export async function generateMetadata({ params }: { params: Promise<{ locale: string, slug: string }> }) {
+  const { locale, slug } = await params;
+  const product = await getProduct(slug, locale)
   if (!product) return {}
-  const p = product as unknown as { metaTitle?: string; metaDescription?: string; name: string }
+
+  const p = product as any
+  const pName = p.name
+  const metaTitle = p.metaTitle
+  const metaDesc = p.metaDescription
+
   return {
-    title: p.metaTitle || p.name,
-    description: p.metaDescription,
+    title: metaTitle || pName,
+    description: metaDesc,
   }
 }
 
 export default async function ProductPage({
   params,
 }: {
-  params: { slug: string }
+  params: Promise<{ locale: string, slug: string }>
 }) {
-  const product = await getProduct(params.slug)
+  const { locale, slug } = await params;
+  const product = await getProduct(slug, locale)
   if (!product) notFound()
 
-  const p = product as unknown as {
-    _id: { toString(): string }
-    name: string
-    slug: string
-    description?: string
-    price: number
-    images: string[]
-    category?: { label: string }
-  }
+  const p = product as any
+  const pName = p.name
+  const pSlug = p.slug
+  const pDesc = p.description
+  const catLabel = p.category?.label || ''
 
   return (
     <div className="max-w-6xl mx-auto px-4 py-8 md:py-12">
@@ -50,7 +57,7 @@ export default async function ProductPage({
             {p.images?.[0] ? (
               <Image
                 src={p.images[0]}
-                alt={p.name}
+                alt={pName}
                 fill
                 className="object-contain p-8 drop-shadow-[0_15px_25px_rgba(0,0,0,0.15)] transition-transform duration-500 hover:scale-[1.03]"
                 priority
@@ -61,11 +68,11 @@ export default async function ProductPage({
               </div>
             )}
           </div>
-          {p.images.length > 1 && (
+          {p.images?.length > 1 && (
             <div className="grid grid-cols-4 gap-2">
-              {p.images.slice(1, 5).map((img, i) => (
+              {p.images.slice(1, 5).map((img: string, i: number) => (
                 <div key={i} className="aspect-square rounded-2xl overflow-hidden relative bg-gradient-to-br from-white to-gray-50 border border-gray-100 shadow-sm hover:shadow-md transition-all cursor-pointer ring-1 ring-black/5">
-                  <Image src={img} alt={`${p.name} ${i + 2}`} fill className="object-contain p-3 drop-shadow-sm" />
+                  <Image src={img} alt={`${pName} ${i + 2}`} fill className="object-contain p-3 drop-shadow-sm" />
                 </div>
               ))}
             </div>
@@ -75,13 +82,13 @@ export default async function ProductPage({
         {/* Info */}
         <div className="lg:col-span-7 flex flex-col">
           <div>
-            {p.category && (
+            {catLabel && (
               <span className="inline-block px-3 py-1 bg-pink-50 text-pink-600 text-xs font-bold uppercase tracking-wider rounded-full mb-4">
-                {p.category.label}
+                {catLabel}
               </span>
             )}
             <h1 className="text-3xl sm:text-4xl md:text-[2.5rem] font-extrabold text-gray-900 tracking-tight leading-tight mb-4">
-              {p.name}
+              {pName}
             </h1>
           </div>
 
@@ -97,9 +104,9 @@ export default async function ProductPage({
               <AddToCartButton
                 product={{
                   id: p._id.toString(),
-                  name: p.name,
+                  name: pName,
                   price: p.price,
-                  slug: p.slug,
+                  slug: pSlug,
                   image: p.images?.[0],
                 }}
               />
@@ -124,7 +131,7 @@ export default async function ProductPage({
       </div>
 
       {/* Description */}
-      {p.description && (
+      {pDesc && (
         <div className="mt-16 lg:mt-24 pt-12 border-t border-gray-100 mb-10">
           <div className="max-w-3xl mx-auto">
             <h3 className="text-2xl font-bold text-gray-900 mb-8 flex items-center gap-3">
@@ -132,7 +139,7 @@ export default async function ProductPage({
               Sobre o conteúdo
             </h3>
             <div className="text-gray-600 leading-relaxed whitespace-pre-wrap text-[1.05rem]">
-              {p.description}
+              {pDesc}
             </div>
           </div>
         </div>

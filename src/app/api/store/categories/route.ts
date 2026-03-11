@@ -2,10 +2,12 @@ import { NextResponse } from 'next/server'
 import { connectMongo } from '@/lib/mongodb'
 import CategoryModel from '@/lib/models/Category'
 
-export async function GET() {
+export async function GET(request: Request) {
     try {
         await connectMongo()
-        const categories = await CategoryModel.find({ active: true })
+        const { searchParams } = new URL(request.url)
+        const locale = searchParams.get('locale') || 'pt'
+        const categories = await CategoryModel.find({ active: true, locale })
             .sort({ label: 1 })
             .lean()
         return NextResponse.json({ data: categories })

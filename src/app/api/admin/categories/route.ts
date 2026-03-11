@@ -8,6 +8,7 @@ import { Types } from 'mongoose'
 
 const schema = z.object({
     label: z.string().min(1),
+    locale: z.enum(['pt', 'en']).default('pt'),
     description: z.string().optional(),
     active: z.boolean().optional(),
     parent: z.string().nullable().optional(),
@@ -40,7 +41,7 @@ export async function POST(req: Request) {
 
     try {
         const body = await req.json()
-        const { label, description, active, parent, order } = schema.parse(body)
+        const { label, locale, description, active, parent, order } = schema.parse(body)
         const value = generateSlug(label)
 
         await connectMongo()
@@ -58,7 +59,7 @@ export async function POST(req: Request) {
         }
 
         const parentId = parent ? new Types.ObjectId(parent) : null
-        const category = await CategoryModel.create({ label, value, description, active, parent: parentId, order: order ?? 0 })
+        const category = await CategoryModel.create({ label, locale, value, description, active, parent: parentId, order: order ?? 0 })
 
         return NextResponse.json({ data: { ...category.toObject(), parent: null } }, { status: 201 })
     } catch (err) {

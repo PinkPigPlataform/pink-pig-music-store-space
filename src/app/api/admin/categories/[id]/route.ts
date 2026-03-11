@@ -6,6 +6,7 @@ import { z } from 'zod'
 
 const updateSchema = z.object({
     label: z.string().min(1).optional(),
+    locale: z.enum(['pt', 'en']).optional(),
     description: z.string().optional(),
     active: z.boolean().optional(),
     parent: z.string().nullable().optional(),
@@ -42,10 +43,11 @@ export async function PUT(
         // Auto-update slug if label changes
         if (data.label) {
             const { generateSlug } = await import('@/lib/utils')
-            payload.value = generateSlug(data.label)
+            const value = generateSlug(data.label)
+            payload.value = value
 
             // Ensure new slug is unique
-            const existing = await CategoryModel.findOne({ value: payload.value, _id: { $ne: params.id } })
+            const existing = await CategoryModel.findOne({ value, _id: { $ne: params.id } })
             if (existing) {
                 return NextResponse.json({ error: 'Já existe uma categoria com este nome/link' }, { status: 409 })
             }

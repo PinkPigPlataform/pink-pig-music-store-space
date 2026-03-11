@@ -5,6 +5,8 @@ import { ShoppingCart, Menu, X, User, LogOut, Package } from 'lucide-react'
 import { useState } from 'react'
 import { useCartStore } from '@/lib/stores/cart'
 import { useRouter } from 'next/navigation'
+import { useTranslations } from 'next-intl'
+import LanguageSwitcher from './LanguageSwitcher'
 
 interface NavbarClientProps {
   user: { id: string; email: string } | null
@@ -15,6 +17,7 @@ export default function NavbarClient({ user }: NavbarClientProps) {
   const [dropdownOpen, setDropdownOpen] = useState(false)
   const itemCount = useCartStore((s) => s.items.length)
   const router = useRouter()
+  const t = useTranslations('Navigation')
 
   async function handleLogout() {
     await fetch('/api/auth/user/logout', { method: 'POST' })
@@ -33,11 +36,11 @@ export default function NavbarClient({ user }: NavbarClientProps) {
 
         <nav className="hidden md:flex items-center gap-6">
           <Link href="/products" className="text-gray-600 hover:text-gray-900 font-medium text-sm">
-            Produtos
+            {t('products')}
           </Link>
           {user && (
             <Link href="/account/orders" className="text-gray-600 hover:text-gray-900 font-medium text-sm">
-              Meus pedidos
+              {t('myOrders')}
             </Link>
           )}
         </nav>
@@ -62,7 +65,7 @@ export default function NavbarClient({ user }: NavbarClientProps) {
                     className="flex items-center gap-2 px-4 py-2.5 text-sm text-gray-700 hover:bg-gray-50"
                   >
                     <Package className="w-4 h-4" />
-                    Meus pedidos
+                    {t('myOrders')}
                   </Link>
                   <hr className="my-1" />
                   <button
@@ -70,7 +73,7 @@ export default function NavbarClient({ user }: NavbarClientProps) {
                     className="flex items-center gap-2 px-4 py-2.5 text-sm text-red-600 hover:bg-red-50 w-full text-left"
                   >
                     <LogOut className="w-4 h-4" />
-                    Sair
+                    {t('signOut')}
                   </button>
                 </div>
               )}
@@ -81,7 +84,7 @@ export default function NavbarClient({ user }: NavbarClientProps) {
               className="hidden md:flex items-center gap-1.5 text-sm text-gray-600 hover:text-gray-900"
             >
               <User className="w-4 h-4" />
-              Entrar
+              {t('signIn')}
             </Link>
           )}
 
@@ -90,13 +93,15 @@ export default function NavbarClient({ user }: NavbarClientProps) {
             className="relative flex items-center gap-1.5 bg-pink-500 hover:bg-pink-600 text-white px-4 py-2 rounded-full text-sm font-medium transition-colors"
           >
             <ShoppingCart className="w-4 h-4" />
-            <span>Carrinho</span>
+            <span>{t('cart')}</span>
             {itemCount > 0 && (
               <span className="absolute -top-1.5 -right-1.5 bg-red-500 text-white text-xs w-5 h-5 rounded-full flex items-center justify-center font-bold">
                 {itemCount}
               </span>
             )}
           </Link>
+
+          <LanguageSwitcher />
 
           <button
             className="md:hidden text-gray-500 hover:text-gray-900"
@@ -112,23 +117,23 @@ export default function NavbarClient({ user }: NavbarClientProps) {
       {open && (
         <div className="md:hidden border-t bg-white px-4 py-4 space-y-3">
           <Link href="/products" className="block text-gray-700 font-medium" onClick={() => setOpen(false)}>
-            Produtos
+            {t('products')}
           </Link>
           {user ? (
             <>
               <Link href="/account/orders" className="block text-gray-700 font-medium" onClick={() => setOpen(false)}>
-                Meus pedidos
+                {t('myOrders')}
               </Link>
               <button
                 onClick={() => { setOpen(false); handleLogout() }}
                 className="block text-red-600 font-medium w-full text-left"
               >
-                Sair
+                {t('signOut')}
               </button>
             </>
           ) : (
             <Link href="/sign-in" className="block text-gray-700 font-medium" onClick={() => setOpen(false)}>
-              Entrar
+              {t('signIn')}
             </Link>
           )}
         </div>

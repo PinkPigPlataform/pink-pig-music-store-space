@@ -1,0 +1,24 @@
+{
+    "Common": {
+        "loading": "Carregando...",
+        "error": "Ocorreu um erro",
+        "submit": "Enviar",
+        "cancel": "Cancelar",
+        "save": "Salvar"
+    },
+    "Navigation": {
+        "home": "Início",
+        "products": "Produtos",
+        "contact": "Contato",
+        "signIn": "Entrar",
+        "signOut": "Sair",
+        "cart": "Carrinho",
+        "myOrders": "Meus pedidos"
+    },
+    "Footer": {
+        "rights": "Todos os direitos reservados.",
+        "terms": "Termos",
+        "privacy": "Privacidade",
+        "contact": "Contato"
+    }
+}

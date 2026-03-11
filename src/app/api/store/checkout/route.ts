@@ -27,24 +27,40 @@ export async function POST(req: Request) {
             return NextResponse.json({ error: 'Produtos não encontrados' }, { status: 400 })
         }
 
+        // Check for mixed locales in the cart
+        const locales = new Set(products.map((p) => p.locale || 'pt'))
+        if (locales.size > 1) {
+            return NextResponse.json(
+                { error: 'Não é possível misturar produtos de idiomas diferentes no mesmo pedido' },
+                { status: 400 }
+            )
+        }
+
+        const locale = Array.from(locales)[0]
+        const currency = locale === 'en' ? 'usd' : 'brl'
+
+
         const total = products.reduce((sum, p) => sum + p.price, 0)
 
         const order = await OrderModel.create({
             user: user._id,
             products: products.map((p) => p._id),
             total: Math.round(total * 100),
-            currency: 'BRL',
+            currency: currency.toUpperCase(),
             status: 'pending',
         })
 
-        const line_items = products.map((product) => ({
-            price_data: {
-                currency: 'brl',
-                product_data: { name: product.name },
-                unit_amount: Math.round(product.price * 100),
-            },
-            quantity: 1,
-        }))
+        const line_items = products.map((product) => {
+            const prodName = product.name;
+            return {
+                price_data: {
+                    currency: currency,
+                    product_data: { name: prodName || 'Produto' },
+                    unit_amount: Math.round(product.price * 100),
+                },
+                quantity: 1,
+            };
+        })
 
         const base = process.env.NEXT_PUBLIC_STORE_URL || ''
 

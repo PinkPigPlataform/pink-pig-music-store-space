@@ -7,23 +7,25 @@ import { Plus, Search, Edit, Trash2, Package, X, Loader2, ImagePlus, Star, File,
 import { toast } from 'sonner'
 
 // ─── Types ───────────────────────────────────────────────
-interface Category { _id: string; label: string; parent?: { _id: string; label: string } | null }
+interface Category { _id: string; label: any; locale: string; parent?: { _id: string; label: any } | null }
 interface DigitalFile { _id: string; name: string }
 interface Product {
   _id: string
-  name: string
+  name: any
   price: number
+  locale: string
   active: boolean
   featured: boolean
-  category?: { _id: string; label: string }
+  category?: { _id: string; label: any }
   digitalFile?: { _id: string; name: string }
   images?: string[]
-  description?: string
+  description?: any
   createdAt: string
 }
 interface FormState {
   name: string
   description: string
+  locale: string
   price: string
   category: string
   digitalFile: string
@@ -33,7 +35,7 @@ interface FormState {
 }
 
 const EMPTY_FORM: FormState = {
-  name: '', description: '', price: '', category: '',
+  name: '', description: '', locale: 'pt', price: '', category: '',
   digitalFile: '', active: true, featured: false, imageUrl: '',
 }
 
@@ -86,8 +88,9 @@ export default function AdminProductsPage() {
   function openEdit(p: Product) {
     setEditing(p)
     setForm({
-      name: p.name,
-      description: p.description ?? '',
+      name: p.name || '',
+      description: p.description || '',
+      locale: p.locale || 'pt',
       price: (p.price).toString(),
       category: p.category?._id ?? '',
       digitalFile: p.digitalFile?._id ?? '',
@@ -206,6 +209,7 @@ export default function AdminProductsPage() {
     setSaving(true)
     const payload = {
       name: form.name,
+      locale: form.locale,
       description: form.description,
       price: parseFloat(form.price),
       category: form.category,
@@ -284,6 +288,7 @@ export default function AdminProductsPage() {
               <thead>
                 <tr className="border-b bg-gray-50">
                   <th className="text-left px-5 py-3 font-medium text-gray-500">Produto</th>
+                  <th className="text-left px-4 py-3 font-medium text-gray-500 hidden md:table-cell">Idioma</th>
                   <th className="text-left px-4 py-3 font-medium text-gray-500 hidden md:table-cell">Categoria</th>
                   <th className="text-left px-4 py-3 font-medium text-gray-500">Preço</th>
                   <th className="text-left px-4 py-3 font-medium text-gray-500 hidden sm:table-cell">Status</th>
@@ -314,16 +319,21 @@ export default function AdminProductsPage() {
                       </div>
                     </td>
                     <td className="px-4 py-3.5 text-gray-600 hidden md:table-cell">
+                      <span className="inline-flex items-center px-2 py-0.5 rounded text-xs font-semibold bg-gray-100 text-gray-600 uppercase">
+                        {p.locale || 'pt'}
+                      </span>
+                    </td>
+                    <td className="px-4 py-3.5 text-gray-600 hidden md:table-cell">
                       {(() => {
                         if (!p.category) return '—'
                         const fullCat = categories.find(c => c._id === p.category?._id)
                         return fullCat?.parent 
                           ? <><span className="text-gray-400">{fullCat.parent.label} &rsaquo; </span>{fullCat.label}</>
-                          : <span className="font-medium text-gray-700">{p.category.label}</span>
+                          : <span className="font-medium text-gray-700">{fullCat?.label || p.category.label}</span>
                       })()}
                     </td>
                     <td className="px-4 py-3.5 font-medium text-gray-900">
-                      {formatPrice(Math.round(p.price * 100))}
+                      {formatPrice(Math.round(p.price * 100), { currency: p.locale === 'en' ? 'USD' : 'BRL' })}
                     </td>
                     <td className="px-4 py-3.5 hidden sm:table-cell">
                       <span className={`inline-flex items-center px-2 py-0.5 rounded-full text-xs font-medium ${p.active ? 'bg-green-100 text-green-700' : 'bg-gray-100 text-gray-500'}`}>
@@ -403,17 +413,30 @@ export default function AdminProductsPage() {
                 </div>
               </div>
 
-              {/* Name */}
-              <div>
-                <label className="block text-sm font-medium text-gray-700 mb-1">Nome *</label>
-                <input
-                  type="text"
-                  value={form.name}
-                  onChange={e => setForm(f => ({ ...f, name: e.target.value }))}
-                  required
-                  placeholder="Ex: Drum Kit Trap 2025"
-                  className="w-full border border-gray-200 rounded-lg px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-pink-500"
-                />
+              {/* Name & Locale */}
+              <div className="grid grid-cols-2 gap-4">
+                <div>
+                  <label className="block text-sm font-medium text-gray-700 mb-1">Nome *</label>
+                  <input
+                    type="text"
+                    value={form.name}
+                    onChange={e => setForm(f => ({ ...f, name: e.target.value }))}
+                    required
+                    placeholder="Ex: Drum Kit Trap 2025"
+                    className="w-full border border-gray-200 rounded-lg px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-pink-500"
+                  />
+                </div>
+                <div>
+                  <label className="block text-sm font-medium text-gray-700 mb-1">Idioma *</label>
+                  <select
+                    value={form.locale}
+                    onChange={e => setForm(f => ({ ...f, locale: e.target.value }))}
+                    className="w-full border border-gray-200 rounded-lg px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-pink-500 bg-white"
+                  >
+                    <option value="pt">Português (PT)</option>
+                    <option value="en">Inglês (EN)</option>
+                  </select>
+                </div>
               </div>
 
               {/* Description */}
@@ -452,16 +475,24 @@ export default function AdminProductsPage() {
                     className="w-full border border-gray-200 rounded-lg px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-pink-500 bg-white"
                   >
                     <option value="">Selecionar...</option>
-                    {categories.filter(c => !c.parent).map(root => (
-                      <optgroup key={root._id} label={root.label} className="font-semibold text-gray-900 bg-gray-50/50">
-                        <option value={root._id} className="font-normal text-gray-600 bg-white">SELECIONAR: {root.label} (Geral)</option>
-                        {categories.filter(sub => sub.parent?._id === root._id).map(sub => (
+                    {categories
+                      .filter(c => (c.locale || 'pt') === form.locale)
+                      .filter(c => !c.parent).map(root => {
+                      const rootLabel = root.label;
+                      return (
+                      <optgroup key={root._id} label={rootLabel} className="font-semibold text-gray-900 bg-gray-50/50">
+                        <option value={root._id} className="font-normal text-gray-600 bg-white">SELECIONAR: {rootLabel} (Geral)</option>
+                        {categories
+                          .filter(c => (c.locale || 'pt') === form.locale)
+                          .filter(sub => sub.parent?._id === root._id).map(sub => {
+                          const subLabel = sub.label;
+                          return (
                           <option key={sub._id} value={sub._id} className="font-medium text-gray-700 bg-white">
-                            └ {sub.label}
+                            └ {subLabel}
                           </option>
-                        ))}
+                        )})}
                       </optgroup>
-                    ))}
+                    )})}
                   </select>
                 </div>
               </div>

@@ -5,17 +5,24 @@ import { formatPrice } from '@/lib/utils'
 import { ArrowRight, ShieldCheck, Download, Zap } from 'lucide-react'
 import Image from 'next/image'
 
-async function getHomeProducts() {
+async function getHomeProducts(locale: string) {
   await connectMongo()
-  return ProductModel.find({ active: true })
+  return ProductModel.find({ active: true, locale })
     .populate('category', 'label')
     .sort({ featured: -1, createdAt: -1 })
     .limit(8)
     .lean()
 }
 
-export default async function StorePage() {
-  const products = await getHomeProducts()
+export default async function StorePage({
+  params,
+}: {
+  params: Promise<{ locale: string }>
+}) {
+  const { locale } = await params
+  const products = await getHomeProducts(locale)
+
+  // Removed localize function as we use plain strings now
 
   return (
     <div>
@@ -75,48 +82,47 @@ export default async function StorePage() {
               </Link>
             </div>
             <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-6">
-              {(products as unknown as Array<{
-                _id: { toString(): string }
-                name: string
-                slug: string
-                price: number
-                images: string[]
-                category?: { label: string }
-              }>).map((product) => (
-                <Link
-                  key={product._id.toString()}
-                  href={`/products/${product.slug}`}
-                  className="group bg-white rounded-xl overflow-hidden border hover:shadow-lg transition-shadow"
-                >
-                  <div className="aspect-square bg-gray-100 relative overflow-hidden">
-                    {product.images?.[0] ? (
-                      <Image
-                        src={product.images[0]}
-                        alt={product.name}
-                        fill
-                        className="object-contain p-4 group-hover:scale-105 transition-transform duration-300"
-                      />
-                    ) : (
-                      <div className="w-full h-full flex items-center justify-center text-gray-300">
-                        <Download className="w-12 h-12" />
-                      </div>
-                    )}
-                  </div>
-                  <div className="p-4">
-                    {product.category && (
-                      <span className="text-xs text-pink-500 font-medium">
-                        {product.category.label}
-                      </span>
-                    )}
-                    <h3 className="font-semibold text-gray-900 mt-1 line-clamp-2">
-                      {product.name}
-                    </h3>
-                    <p className="mt-2 text-lg font-bold text-gray-900">
-                      {formatPrice(Math.round(product.price * 100))}
-                    </p>
-                  </div>
-                </Link>
-              ))}
+              {(products as any[]).map((product) => {
+                const pName = product.name
+                const pSlug = product.slug
+                const catLabel = product.category?.label || ''
+
+                return (
+                  <Link
+                    key={product._id.toString()}
+                    href={`/products/${pSlug}`}
+                    className="group bg-white rounded-xl overflow-hidden border hover:shadow-lg transition-shadow"
+                  >
+                    <div className="aspect-square bg-gray-100 relative overflow-hidden">
+                      {product.images?.[0] ? (
+                        <Image
+                          src={product.images[0]}
+                          alt={pName}
+                          fill
+                          className="object-contain p-4 group-hover:scale-105 transition-transform duration-300"
+                        />
+                      ) : (
+                        <div className="w-full h-full flex items-center justify-center text-gray-300">
+                          <Download className="w-12 h-12" />
+                        </div>
+                      )}
+                    </div>
+                    <div className="p-4">
+                      {catLabel && (
+                        <span className="text-xs text-pink-500 font-medium">
+                          {catLabel}
+                        </span>
+                      )}
+                      <h3 className="font-semibold text-gray-900 mt-1 line-clamp-2">
+                        {pName}
+                      </h3>
+                      <p className="mt-2 text-lg font-bold text-gray-900">
+                        {formatPrice(Math.round(product.price * 100))}
+                      </p>
+                    </div>
+                  </Link>
+                )
+              })}
             </div>
           </div>
         </section>

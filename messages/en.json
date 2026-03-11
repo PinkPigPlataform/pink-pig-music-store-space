@@ -1,0 +1,24 @@
+{
+    "Common": {
+        "loading": "Loading...",
+        "error": "An error occurred",
+        "submit": "Submit",
+        "cancel": "Cancel",
+        "save": "Save"
+    },
+    "Navigation": {
+        "home": "Home",
+        "products": "Products",
+        "contact": "Contact",
+        "signIn": "Sign In",
+        "signOut": "Sign Out",
+        "cart": "Cart",
+        "myOrders": "My Orders"
+    },
+    "Footer": {
+        "rights": "All rights reserved.",
+        "terms": "Terms",
+        "privacy": "Privacy",
+        "contact": "Contact"
+    }
+}

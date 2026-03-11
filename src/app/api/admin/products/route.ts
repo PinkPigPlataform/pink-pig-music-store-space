@@ -7,6 +7,7 @@ import { z } from 'zod'
 
 const schema = z.object({
     name: z.string().min(1),
+    locale: z.enum(['pt', 'en']).default('pt'),
     description: z.string().optional(),
     price: z.number().min(0),
     category: z.string(),
@@ -59,13 +60,16 @@ export async function POST(req: Request) {
 
         await connectMongo()
 
-        const slug = generateSlug(data.name)
+        const baseName = data.name || 'product'
+        let slug = generateSlug(baseName)
         const existing = await ProductModel.findOne({ slug })
-        const finalSlug = existing ? `${slug}-${Date.now()}` : slug
+        if (existing) {
+            slug = `${slug}-${Date.now()}`
+        }
 
         const product = await ProductModel.create({
             ...data,
-            slug: finalSlug,
+            slug,
         })
 
         return NextResponse.json({ data: product }, { status: 201 })

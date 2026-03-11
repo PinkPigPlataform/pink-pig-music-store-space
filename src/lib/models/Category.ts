@@ -3,7 +3,8 @@ import mongoose, { Schema, model } from 'mongoose'
 const CategorySchema = new Schema(
     {
         label: { type: String, required: true },
-        value: { type: String, required: true, unique: true, lowercase: true },
+        locale: { type: String, enum: ['pt', 'en'], default: 'pt' },
+        value: { type: String, required: true, lowercase: true },
         description: { type: String, default: '' },
         active: { type: Boolean, default: true },
         parent: { type: Schema.Types.ObjectId, ref: 'Category', default: null },
@@ -11,6 +12,8 @@ const CategorySchema = new Schema(
     },
     { timestamps: true }
 )
+
+CategorySchema.index({ value: 1, locale: 1 }, { unique: true })
 
 // Force re-registration in Next.js HMR to avoid stale schema
 if (mongoose.models['Category']) {
