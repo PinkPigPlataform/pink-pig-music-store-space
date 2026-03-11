@@ -17,6 +17,7 @@ const schema = z.object({
     featured: z.boolean().optional(),
     metaTitle: z.string().optional(),
     metaDescription: z.string().optional(),
+    demoUrl: z.string().optional(),
 })
 
 export async function GET(req: Request) {

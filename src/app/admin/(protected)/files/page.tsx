@@ -2,7 +2,7 @@
 
 import { useEffect, useRef, useState } from 'react'
 import { AdminHeader } from '@/components/admin/header'
-import { Upload, File, Loader2 } from 'lucide-react'
+import { Upload, File, Loader2, Trash2, ShieldCheck } from 'lucide-react'
 import { toast } from 'sonner'
 
 interface DigitalFile {
@@ -25,6 +25,7 @@ export default function AdminFilesPage() {
   const [files, setFiles] = useState<DigitalFile[]>([])
   const [loading, setLoading] = useState(true)
   const [uploading, setUploading] = useState(false)
+  const [cleaning, setCleaning] = useState(false)
   const fileRef = useRef<HTMLInputElement>(null)
 
   async function load() {
@@ -53,11 +54,49 @@ export default function AdminFilesPage() {
     if (fileRef.current) fileRef.current.value = ''
   }
 
+  async function handleDelete(id: string, name: string) {
+    if (!confirm(`Deletar "${name}" permanentemente?`)) return
+    const res = await fetch(`/api/admin/files/${id}`, { method: 'DELETE' })
+    if (res.ok) {
+      toast.success('Arquivo deletado')
+      load()
+    } else {
+      toast.error('Erro ao deletar')
+    }
+  }
+
+  async function handleCleanup() {
+    setCleaning(true)
+    const res = await fetch('/api/admin/files/cleanup', { method: 'POST' })
+    const data = await res.json()
+    if (res.ok) {
+      if (data.count === 0) {
+        toast.success('Nenhum arquivo órfão encontrado')
+      } else {
+        toast.success(`${data.count} arquivo(s) órfão(s) removido(s): ${data.removed.join(', ')}`)
+        load()
+      }
+    } else {
+      toast.error('Erro ao verificar arquivos')
+    }
+    setCleaning(false)
+  }
+
   useEffect(() => { load() }, [])
 
   return (
     <div className="p-4 md:p-6 space-y-5">
-      <AdminHeader title="Arquivos Digitais" />
+      <div className="flex items-center justify-between">
+        <AdminHeader title="Arquivos Digitais" />
+        <button
+          onClick={handleCleanup}
+          disabled={cleaning}
+          className="flex items-center gap-2 text-sm text-gray-500 hover:text-gray-800 border border-gray-200 rounded-lg px-3 py-2 transition-colors disabled:opacity-50"
+        >
+          {cleaning ? <Loader2 className="w-4 h-4 animate-spin" /> : <ShieldCheck className="w-4 h-4" />}
+          {cleaning ? 'Verificando...' : 'Verificar órfãos'}
+        </button>
+      </div>
 
       <div
         onClick={() => fileRef.current?.click()}
@@ -100,14 +139,23 @@ export default function AdminFilesPage() {
                     <p className="text-xs text-gray-400">{formatSize(f.size)} • {f.mime ?? 'arquivo'}</p>
                   </div>
                 </div>
-                <a
-                  href={f.url}
-                  target="_blank"
-                  rel="noopener noreferrer"
-                  className="text-xs text-pink-500 hover:underline shrink-0"
-                >
-                  Ver
-                </a>
+                <div className="flex items-center gap-3 shrink-0">
+                  <a
+                    href={f.url}
+                    target="_blank"
+                    rel="noopener noreferrer"
+                    className="text-xs text-pink-500 hover:underline"
+                  >
+                    Ver
+                  </a>
+                  <button
+                    onClick={() => handleDelete(f._id, f.name)}
+                    className="p-1.5 text-gray-400 hover:text-red-500 transition-colors"
+                    title="Deletar"
+                  >
+                    <Trash2 className="w-4 h-4" />
+                  </button>
+                </div>
               </div>
             ))}
           </div>

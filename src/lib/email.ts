@@ -77,7 +77,7 @@ export async function sendReceiptEmail(
             </td>
           </tr>
         </table>
-        <a href="${BASE}/account/orders/${order.id}"
+        <a href="${BASE}/account/orders"
            style="display:inline-block;margin-top:16px;background:#ec4899;color:white;padding:12px 24px;border-radius:6px;text-decoration:none;font-weight:600">
           Ver pedido e baixar arquivos
         </a>

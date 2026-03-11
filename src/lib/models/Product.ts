@@ -18,6 +18,7 @@ const ProductSchema = new Schema(
         stripePriceId: { type: String },
         metaTitle: { type: String },
         metaDescription: { type: String },
+        demoUrl: { type: String },
     },
     { timestamps: true }
 )
