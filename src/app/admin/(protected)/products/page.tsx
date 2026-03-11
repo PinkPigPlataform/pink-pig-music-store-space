@@ -333,7 +333,7 @@ export default function AdminProductsPage() {
                       })()}
                     </td>
                     <td className="px-4 py-3.5 font-medium text-gray-900">
-                      {formatPrice(Math.round(p.price * 100), { currency: p.locale === 'en' ? 'USD' : 'BRL' })}
+                      {formatPrice(Math.round(p.price * 100), p.locale === 'en' ? 'USD' : 'BRL')}
                     </td>
                     <td className="px-4 py-3.5 hidden sm:table-cell">
                       <span className={`inline-flex items-center px-2 py-0.5 rounded-full text-xs font-medium ${p.active ? 'bg-green-100 text-green-700' : 'bg-gray-100 text-gray-500'}`}>
