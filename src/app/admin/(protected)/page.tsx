@@ -121,7 +121,7 @@ export default function AdminDashboardPage() {
             </div>
             <div>
               <h2 className="font-semibold text-gray-900 text-sm md:text-base">Receita Mensal</h2>
-              <p className="text-xs text-gray-500">Últimos 12 meses (em R$)</p>
+              <p className="text-xs text-gray-500">Últimos 12 meses</p>
             </div>
           </div>
           {monthly.length > 0 ? (

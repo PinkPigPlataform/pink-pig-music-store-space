@@ -54,12 +54,12 @@ export default async function ProductPage({
     <div className="max-w-6xl mx-auto px-4 py-8 md:py-12">
       <div className="grid grid-cols-1 lg:grid-cols-12 gap-10 lg:gap-14">
         {/* Images */}
-        <div className="lg:col-span-5">
+        <div className="lg:col-span-6 xl:col-span-6">
           <ProductGallery images={p.images} productName={pName} />
         </div>
 
         {/* Info */}
-        <div className="lg:col-span-7 flex flex-col">
+        <div className="lg:col-span-6 xl:col-span-6 flex flex-col">
           <div>
             {catLabel && (
               <span className="inline-block px-3 py-1 bg-pink-50 text-pink-600 text-xs font-bold uppercase tracking-wider rounded-full mb-4">

@@ -1,9 +1,10 @@
 'use client'
 
 import { useEffect, useRef, useState } from 'react'
+import { cn } from '@/lib/utils'
 import { AdminHeader } from '@/components/admin/header'
 import { formatPrice, formatDate } from '@/lib/utils'
-import { Plus, Search, Edit, Trash2, Package, X, Loader2, ImagePlus, Star, File, Upload, ArrowUp, ArrowDown, GripVertical } from 'lucide-react'
+import { Plus, Search, Edit, Trash2, Package, X, Loader2, ImagePlus, Star, File, Upload, ArrowUp, ArrowDown, GripVertical, Copy, ShieldCheck } from 'lucide-react'
 import { toast } from 'sonner'
 
 // ─── Types ───────────────────────────────────────────────
@@ -54,6 +55,9 @@ export default function AdminProductsPage() {
   const [isDragging, setIsDragging] = useState(false)
   const [uploadingFile, setUploadingFile] = useState(false)
   const [isFileDragging, setIsFileDragging] = useState(false)
+  const [draggedIdx, setDraggedIdx] = useState<number | null>(null)
+  const [dragOverIdx, setDragOverIdx] = useState<number | null>(null)
+  const [donorProduct, setDonorProduct] = useState<Product | null>(null)
   const imageRef = useRef<HTMLInputElement>(null)
   const fileInputRef = useRef<HTMLInputElement>(null)
 
@@ -154,11 +158,29 @@ export default function AdminProductsPage() {
     })
   }
 
-  function removeImage(index: number) {
+  async function removeImage(index: number, url: string) {
+    // Tentativa de deletar do Cloudinary
+    try {
+      // Extrair public_id da URL: pink-pig/products/filename.ext
+      const parts = url.split('/')
+      const folderIdx = parts.indexOf('pink-pig')
+      if (folderIdx !== -1) {
+        const publicPath = parts.slice(folderIdx).join('/')
+        const publicId = publicPath.split('.')[0] // Remove extensão
+        
+        await fetch(`/api/admin/upload/image?publicId=${encodeURIComponent(publicId)}`, {
+          method: 'DELETE'
+        })
+      }
+    } catch (error) {
+      console.error('Falha ao remover do Cloudinary:', error)
+    }
+
     setForm(f => ({
       ...f,
       images: f.images.filter((_, i) => i !== index)
     }))
+    toast.success('Imagem removida')
   }
 
   function moveImage(index: number, direction: 'up' | 'down') {
@@ -400,29 +422,157 @@ export default function AdminProductsPage() {
 
               {/* Image upload */}
               <div className="space-y-4">
-                <label className="block text-sm font-medium text-gray-700">Imagens do produto</label>
+                <div className="bg-gray-50/80 p-4 rounded-2xl border border-gray-100 shadow-sm overflow-hidden">
+                  <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4">
+                    <div className="flex flex-col gap-0.5">
+                      <label className="text-sm font-bold text-gray-900 tracking-tight">Galeria de Imagens</label>
+                      <p className="text-[10px] text-gray-400 font-medium">Gerencie e ordene as fotos do produto</p>
+                    </div>
+                    <div className="relative group/import w-full sm:w-auto">
+                      <select 
+                        className="w-full sm:w-[200px] appearance-none text-xs border border-pink-200 rounded-full pl-9 pr-4 py-2 bg-white outline-none focus:ring-4 focus:ring-pink-500/10 cursor-pointer hover:border-pink-300 transition-all text-pink-600 font-bold shadow-sm truncate"
+                        value={donorProduct?._id || ""}
+                        onChange={(e) => {
+                          const pId = e.target.value;
+                          const donor = products.find(p => p._id === pId);
+                          setDonorProduct(donor || null);
+                        }}
+                      >
+                        <option value="">{donorProduct ? 'Trocar origem...' : 'Importar de outro...'}</option>
+                        {products
+                          .filter(p => p._id !== editing?._id && p.images?.length)
+                          .map(p => (
+                            <option key={p._id} value={p._id}>
+                              [{p.locale.toUpperCase()}] {p.name}
+                            </option>
+                          ))
+                        }
+                      </select>
+                      <Copy className="w-3.5 h-3.5 text-pink-500 absolute left-3.5 top-1/2 -translate-y-1/2 pointer-events-none" />
+                    </div>
+                  </div>
+
+                  {/* Selective Import Picker */}
+                  {donorProduct && (
+                    <div className="pt-3 border-t border-gray-200/50 mt-1 animate-in fade-in slide-in-from-top-2 duration-300">
+                      <div className="flex items-center justify-between mb-3">
+                        <p className="text-[10px] uppercase font-bold text-gray-400 tracking-widest">
+                          Escolher fotos de: <span className="text-pink-500">{donorProduct.name}</span>
+                        </p>
+                        <div className="flex gap-2">
+                          <button 
+                            type="button"
+                            onClick={() => {
+                              const newImages = (donorProduct.images || []).filter(img => !form.images.includes(img));
+                              if (newImages.length > 0) {
+                                setForm(f => ({ ...f, images: [...f.images, ...newImages] }));
+                                toast.success(`${newImages.length} fotos adicionadas!`);
+                              }
+                              setDonorProduct(null);
+                            }}
+                            className="text-[9px] font-bold text-pink-600 hover:text-pink-700 underline"
+                          >
+                            Adicionar Todas
+                          </button>
+                          <button type="button" onClick={() => setDonorProduct(null)} className="text-gray-400 hover:text-gray-600">
+                            <X className="w-3.5 h-3.5" />
+                          </button>
+                        </div>
+                      </div>
+                      <div className="flex gap-2 overflow-x-auto pb-2 no-scrollbar">
+                        {donorProduct.images?.map((img, i) => {
+                          const isAdded = form.images.includes(img);
+                          return (
+                            <div key={i} className="relative shrink-0 group/donor">
+                              <div className={cn(
+                                "w-14 h-14 rounded-lg border-2 bg-white overflow-hidden transition-all",
+                                isAdded ? "border-green-500 opacity-50 shadow-inner scale-90" : "border-gray-100 hover:border-pink-200 shadow-sm"
+                              )}>
+                                <img src={img} alt="donor" className="w-full h-full object-contain p-1" />
+                              </div>
+                              {!isAdded && (
+                                <button
+                                  type="button"
+                                  onClick={() => {
+                                    setForm(f => ({ ...f, images: [...f.images, img] }));
+                                    toast.success('Imagem adicionada!');
+                                  }}
+                                  className="absolute inset-0 flex items-center justify-center bg-pink-500/80 text-white opacity-0 group-hover/donor:opacity-100 transition-opacity rounded-lg"
+                                >
+                                  <Plus className="w-6 h-6 stroke-[3]" />
+                                </button>
+                              )}
+                              {isAdded && (
+                                <div className="absolute -top-1 -right-1 bg-green-500 text-white rounded-full p-0.5 shadow-sm">
+                                  <ShieldCheck className="w-2.5 h-2.5" />
+                                </div>
+                              )}
+                            </div>
+                          );
+                        })}
+                      </div>
+                    </div>
+                  )}
+                </div>
                 
                 {/* Image List */}
                 {form.images.length > 0 && (
                   <div className="space-y-2">
                     {form.images.map((url, idx) => (
-                      <div key={idx} className="flex items-center gap-3 p-2 bg-gray-50 border rounded-xl group">
-                        <div className="w-12 h-12 rounded border bg-white flex items-center justify-center shrink-0 overflow-hidden">
-                          <img src={url} alt={`preview ${idx}`} className="max-w-full max-h-full object-contain" />
+                      <div 
+                        key={idx} 
+                        draggable
+                        onDragStart={() => setDraggedIdx(idx)}
+                        onDragOver={(e) => {
+                          e.preventDefault();
+                          setDragOverIdx(idx);
+                        }}
+                        onDragEnd={() => {
+                          setDraggedIdx(null);
+                          setDragOverIdx(null);
+                        }}
+                        onDrop={() => {
+                          if (draggedIdx !== null && draggedIdx !== idx) {
+                            const newImages = [...form.images];
+                            const [movedItem] = newImages.splice(draggedIdx, 1);
+                            newImages.splice(idx, 0, movedItem);
+                            setForm(f => ({ ...f, images: newImages }));
+                            toast.success('Ordem atualizada!');
+                          }
+                          setDraggedIdx(null);
+                          setDragOverIdx(null);
+                        }}
+                        className={cn(
+                          "flex items-center gap-3 p-2 bg-white border rounded-xl group transition-all cursor-grab active:cursor-grabbing",
+                          draggedIdx === idx && "opacity-40 border-dashed border-pink-500 scale-95",
+                          dragOverIdx === idx && draggedIdx !== idx && "border-solid border-pink-500 bg-pink-50/50 -translate-y-1"
+                        )}
+                      >
+                        <div className="text-gray-300 group-hover:text-pink-400 p-1.5 transition-colors cursor-grab active:cursor-grabbing">
+                          <GripVertical className="w-5 h-5" />
+                        </div>
+                        <div className="w-14 h-14 rounded-lg border bg-gray-50 flex items-center justify-center shrink-0 overflow-hidden shadow-inner">
+                          <img src={url} alt={`preview ${idx}`} className="max-w-full max-h-full object-contain p-1" />
                         </div>
                         <div className="flex-1 min-w-0">
-                          <p className="text-xs font-medium text-gray-900 truncate">
-                            {idx === 0 ? <span className="text-pink-600 font-bold">[CAPA] </span> : ''}
-                            {url.split('/').pop()}
-                          </p>
-                          <p className="text-[10px] text-gray-400">Posição {idx + 1}</p>
+                          <div className="flex items-center gap-2">
+                            {idx === 0 && (
+                              <span className="bg-pink-100 text-pink-600 text-[9px] font-bold px-1.5 py-0.5 rounded leading-none">
+                                CAPA
+                              </span>
+                            )}
+                            <p className="text-xs font-semibold text-gray-900 truncate">
+                              {url.split('/').pop()}
+                            </p>
+                          </div>
+                          <p className="text-[10px] text-gray-400 mt-1">Posição {idx + 1}</p>
                         </div>
                         <div className="flex items-center gap-1 opacity-100 sm:opacity-0 group-hover:opacity-100 transition-opacity">
                           <button
                             type="button"
                             onClick={() => moveImage(idx, 'up')}
                             disabled={idx === 0}
-                            className="p-1 text-gray-400 hover:text-gray-600 disabled:opacity-30"
+                            className="p-1 text-gray-300 hover:text-pink-500 disabled:opacity-20 transition-colors"
                           >
                             <ArrowUp className="w-4 h-4" />
                           </button>
@@ -430,14 +580,15 @@ export default function AdminProductsPage() {
                             type="button"
                             onClick={() => moveImage(idx, 'down')}
                             disabled={idx === form.images.length - 1}
-                            className="p-1 text-gray-400 hover:text-gray-600 disabled:opacity-30"
+                            className="p-1 text-gray-300 hover:text-pink-500 disabled:opacity-20 transition-colors"
                           >
                             <ArrowDown className="w-4 h-4" />
                           </button>
+                          <div className="w-px h-4 bg-gray-100 mx-0.5" />
                           <button
                             type="button"
-                            onClick={() => removeImage(idx)}
-                            className="p-1 text-gray-400 hover:text-red-500"
+                            onClick={() => removeImage(idx, url)}
+                            className="p-1 text-gray-300 hover:text-red-500 transition-colors"
                           >
                             <X className="w-4 h-4" />
                           </button>
@@ -515,7 +666,9 @@ export default function AdminProductsPage() {
               {/* Price + Category */}
               <div className="grid grid-cols-2 gap-4">
                 <div>
-                  <label className="block text-sm font-medium text-gray-700 mb-1">Preço (R$) *</label>
+                  <label className="block text-sm font-medium text-gray-700 mb-1">
+                    Preço ({form.locale === 'en' ? 'USD $' : 'BRL R$'}) *
+                  </label>
                   <input
                     type="number"
                     min="0"

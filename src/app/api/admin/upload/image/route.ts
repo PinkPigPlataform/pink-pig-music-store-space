@@ -39,3 +39,29 @@ export async function POST(req: Request) {
         return NextResponse.json({ error: 'Erro no upload' }, { status: 500 })
     }
 }
+
+export async function DELETE(req: Request) {
+    const { response } = await requireAdmin()
+    if (response) return response
+
+    try {
+        const { searchParams } = new URL(req.url)
+        const publicId = searchParams.get('publicId')
+
+        if (!publicId) {
+            return NextResponse.json({ error: 'Public ID não fornecido' }, { status: 400 })
+        }
+
+        const result = await cloudinary.uploader.destroy(publicId)
+
+        if (result.result !== 'ok') {
+            console.error('Cloudinary destroy failed:', result)
+            return NextResponse.json({ error: 'Falha ao deletar imagem no Cloudinary' }, { status: 500 })
+        }
+
+        return NextResponse.json({ success: true })
+    } catch (err) {
+        console.error('Error deleting image:', err)
+        return NextResponse.json({ error: 'Erro interno ao deletar imagem' }, { status: 500 })
+    }
+}
