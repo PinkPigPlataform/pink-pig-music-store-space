@@ -3,7 +3,7 @@
 import { useEffect, useRef, useState } from 'react'
 import { AdminHeader } from '@/components/admin/header'
 import { formatPrice, formatDate } from '@/lib/utils'
-import { Plus, Search, Edit, Trash2, Package, X, Loader2, ImagePlus, Star, File, Upload } from 'lucide-react'
+import { Plus, Search, Edit, Trash2, Package, X, Loader2, ImagePlus, Star, File, Upload, ArrowUp, ArrowDown, GripVertical } from 'lucide-react'
 import { toast } from 'sonner'
 
 // ─── Types ───────────────────────────────────────────────
@@ -31,12 +31,12 @@ interface FormState {
   digitalFile: string
   active: boolean
   featured: boolean
-  imageUrl: string
+  images: string[]
 }
 
 const EMPTY_FORM: FormState = {
   name: '', description: '', locale: 'pt', price: '', category: '',
-  digitalFile: '', active: true, featured: false, imageUrl: '',
+  digitalFile: '', active: true, featured: false, images: [],
 }
 
 // ─── Main Page ────────────────────────────────────────────
@@ -96,7 +96,7 @@ export default function AdminProductsPage() {
       digitalFile: p.digitalFile?._id ?? '',
       active: p.active,
       featured: p.featured,
-      imageUrl: p.images?.[0] ?? '',
+      images: p.images ?? [],
     })
     setModalOpen(true)
   }
@@ -113,7 +113,7 @@ export default function AdminProductsPage() {
       const res = await fetch('/api/admin/upload/image', { method: 'POST', body: fd })
       const data = await res.json()
       if (res.ok) {
-        setForm(f => ({ ...f, imageUrl: data.url }))
+        setForm(f => ({ ...f, images: [...f.images, data.url] }))
         toast.success('Imagem enviada!')
       } else {
         toast.error(data.error ?? 'Erro no upload')
@@ -127,8 +127,8 @@ export default function AdminProductsPage() {
   }
 
   function handleImageUpload(e: React.ChangeEvent<HTMLInputElement>) {
-    const file = e.target.files?.[0]
-    if (file) processImage(file)
+    const files = Array.from(e.target.files ?? [])
+    files.forEach(file => processImage(file))
   }
 
   function handleDragOver(e: React.DragEvent) {
@@ -144,12 +144,35 @@ export default function AdminProductsPage() {
   function handleDrop(e: React.DragEvent) {
     e.preventDefault()
     setIsDragging(false)
-    const file = e.dataTransfer.files?.[0]
-    if (file && file.type.startsWith('image/')) {
-      processImage(file)
-    } else if (file) {
-      toast.error('Por favor, selecione uma imagem válida.')
-    }
+    const files = Array.from(e.dataTransfer.files ?? [])
+    files.forEach(file => {
+      if (file.type.startsWith('image/')) {
+        processImage(file)
+      } else {
+        toast.error(`"${file.name}" não é uma imagem válida.`)
+      }
+    })
+  }
+
+  function removeImage(index: number) {
+    setForm(f => ({
+      ...f,
+      images: f.images.filter((_, i) => i !== index)
+    }))
+  }
+
+  function moveImage(index: number, direction: 'up' | 'down') {
+    setForm(f => {
+      const newImages = [...f.images]
+      const targetIndex = direction === 'up' ? index - 1 : index + 1
+      if (targetIndex < 0 || targetIndex >= newImages.length) return f
+      
+      const temp = newImages[index]
+      newImages[index] = newImages[targetIndex]
+      newImages[targetIndex] = temp
+      
+      return { ...f, images: newImages }
+    })
   }
 
   // ── Digital File upload ───────────────────────────────────
@@ -202,8 +225,8 @@ export default function AdminProductsPage() {
   // ── Save ──────────────────────────────────────────────────
   async function handleSave(e: React.FormEvent) {
     e.preventDefault()
-    if (!form.name || !form.price || !form.category) {
-      toast.error('Preencha nome, preço e categoria')
+    if (!form.name || !form.price || !form.category || form.images.length === 0) {
+      toast.error('Preencha nome, preço, categoria e adicione ao menos uma imagem')
       return
     }
     setSaving(true)
@@ -216,7 +239,7 @@ export default function AdminProductsPage() {
       digitalFile: form.digitalFile || null,
       active: form.active,
       featured: form.featured,
-      images: form.imageUrl ? [form.imageUrl] : [],
+      images: form.images,
     }
 
     const url = editing ? `/api/admin/products/${editing._id}` : '/api/admin/products'
@@ -376,8 +399,54 @@ export default function AdminProductsPage() {
             <form onSubmit={handleSave} className="px-6 py-5 space-y-5">
 
               {/* Image upload */}
-              <div>
-                <label className="block text-sm font-medium text-gray-700 mb-2">Imagem do produto</label>
+              <div className="space-y-4">
+                <label className="block text-sm font-medium text-gray-700">Imagens do produto</label>
+                
+                {/* Image List */}
+                {form.images.length > 0 && (
+                  <div className="space-y-2">
+                    {form.images.map((url, idx) => (
+                      <div key={idx} className="flex items-center gap-3 p-2 bg-gray-50 border rounded-xl group">
+                        <div className="w-12 h-12 rounded border bg-white flex items-center justify-center shrink-0 overflow-hidden">
+                          <img src={url} alt={`preview ${idx}`} className="max-w-full max-h-full object-contain" />
+                        </div>
+                        <div className="flex-1 min-w-0">
+                          <p className="text-xs font-medium text-gray-900 truncate">
+                            {idx === 0 ? <span className="text-pink-600 font-bold">[CAPA] </span> : ''}
+                            {url.split('/').pop()}
+                          </p>
+                          <p className="text-[10px] text-gray-400">Posição {idx + 1}</p>
+                        </div>
+                        <div className="flex items-center gap-1 opacity-100 sm:opacity-0 group-hover:opacity-100 transition-opacity">
+                          <button
+                            type="button"
+                            onClick={() => moveImage(idx, 'up')}
+                            disabled={idx === 0}
+                            className="p-1 text-gray-400 hover:text-gray-600 disabled:opacity-30"
+                          >
+                            <ArrowUp className="w-4 h-4" />
+                          </button>
+                          <button
+                            type="button"
+                            onClick={() => moveImage(idx, 'down')}
+                            disabled={idx === form.images.length - 1}
+                            className="p-1 text-gray-400 hover:text-gray-600 disabled:opacity-30"
+                          >
+                            <ArrowDown className="w-4 h-4" />
+                          </button>
+                          <button
+                            type="button"
+                            onClick={() => removeImage(idx)}
+                            className="p-1 text-gray-400 hover:text-red-500"
+                          >
+                            <X className="w-4 h-4" />
+                          </button>
+                        </div>
+                      </div>
+                    ))}
+                  </div>
+                )}
+
                 <div
                   onClick={() => imageRef.current?.click()}
                   onDragOver={handleDragOver}
@@ -389,25 +458,17 @@ export default function AdminProductsPage() {
                       : 'border-gray-200 hover:border-pink-400 hover:bg-pink-50'
                   }`}
                 >
-                  <input ref={imageRef} type="file" accept="image/*" className="hidden" onChange={handleImageUpload} />
-                  {form.imageUrl ? (
-                    <div className="flex items-center gap-3">
-                      <img src={form.imageUrl} alt="preview" className="w-16 h-16 rounded bg-gray-50 object-contain" />
-                      <div className="text-left">
-                        <p className="text-sm text-green-600 font-medium">Imagem carregada ✓</p>
-                        <p className="text-xs text-gray-400">Clique para trocar</p>
-                      </div>
-                    </div>
-                  ) : uploading ? (
+                  <input ref={imageRef} type="file" accept="image/*" multiple className="hidden" onChange={handleImageUpload} />
+                  {uploading ? (
                     <div className="flex items-center justify-center gap-2 text-pink-500 py-2">
                       <Loader2 className="w-5 h-5 animate-spin" />
-                      <span className="text-sm">Enviando...</span>
+                      <span className="text-sm text-pink-500">Enviando imagens...</span>
                     </div>
                   ) : (
                     <div className="flex flex-col items-center gap-1 py-2 text-gray-400">
                       <ImagePlus className="w-8 h-8 text-gray-300" />
-                      <p className="text-sm">Clique para enviar imagem</p>
-                      <p className="text-xs">JPG, PNG, WebP — via Cloudinary</p>
+                      <p className="text-sm font-medium">Clique ou arraste para enviar imagens</p>
+                      <p className="text-xs">Múltiplos arquivos permitidos — via Cloudinary</p>
                     </div>
                   )}
                 </div>

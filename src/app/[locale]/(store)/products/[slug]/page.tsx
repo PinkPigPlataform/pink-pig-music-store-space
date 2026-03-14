@@ -6,6 +6,7 @@ import { notFound } from 'next/navigation'
 import Image from 'next/image'
 import { Download, ShieldCheck } from 'lucide-react'
 import AddToCartButton from './add-to-cart-button'
+import ProductGallery from './product-gallery'
 
 async function getProduct(slug: string, locale: string) {
   await connectMongo()
@@ -53,31 +54,8 @@ export default async function ProductPage({
     <div className="max-w-6xl mx-auto px-4 py-8 md:py-12">
       <div className="grid grid-cols-1 lg:grid-cols-12 gap-10 lg:gap-14">
         {/* Images */}
-        <div className="lg:col-span-5 space-y-4">
-          <div className="aspect-square bg-gradient-to-br from-white via-gray-50/80 to-gray-100/50 rounded-3xl overflow-hidden relative border border-white shadow-[0_8px_40px_-10px_rgba(0,0,0,0.08)] ring-1 ring-black/5 flex items-center justify-center">
-            {p.images?.[0] ? (
-              <Image
-                src={p.images[0]}
-                alt={pName}
-                fill
-                className="object-contain p-8 drop-shadow-[0_15px_25px_rgba(0,0,0,0.15)] transition-transform duration-500 hover:scale-[1.03]"
-                priority
-              />
-            ) : (
-              <div className="w-full h-full flex items-center justify-center text-gray-300">
-                <Download className="w-24 h-24" />
-              </div>
-            )}
-          </div>
-          {p.images?.length > 1 && (
-            <div className="grid grid-cols-4 gap-2">
-              {p.images.slice(1, 5).map((img: string, i: number) => (
-                <div key={i} className="aspect-square rounded-2xl overflow-hidden relative bg-gradient-to-br from-white to-gray-50 border border-gray-100 shadow-sm hover:shadow-md transition-all cursor-pointer ring-1 ring-black/5">
-                  <Image src={img} alt={`${pName} ${i + 2}`} fill className="object-contain p-3 drop-shadow-sm" />
-                </div>
-              ))}
-            </div>
-          )}
+        <div className="lg:col-span-5">
+          <ProductGallery images={p.images} productName={pName} />
         </div>
 
         {/* Info */}
