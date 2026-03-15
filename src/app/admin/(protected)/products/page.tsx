@@ -21,6 +21,7 @@ interface Product {
   digitalFile?: { _id: string; name: string }
   images?: string[]
   description?: any
+  videoUrl?: string
   createdAt: string
 }
 interface FormState {
@@ -33,11 +34,13 @@ interface FormState {
   active: boolean
   featured: boolean
   images: string[]
+  videoUrl: string
 }
 
 const EMPTY_FORM: FormState = {
   name: '', description: '', locale: 'pt', price: '', category: '',
   digitalFile: '', active: true, featured: false, images: [],
+  videoUrl: '',
 }
 
 // ─── Main Page ────────────────────────────────────────────
@@ -101,6 +104,7 @@ export default function AdminProductsPage() {
       active: p.active,
       featured: p.featured,
       images: p.images ?? [],
+      videoUrl: p.videoUrl || '',
     })
     setModalOpen(true)
   }
@@ -262,6 +266,7 @@ export default function AdminProductsPage() {
       active: form.active,
       featured: form.featured,
       images: form.images,
+      videoUrl: form.videoUrl,
     }
 
     const url = editing ? `/api/admin/products/${editing._id}` : '/api/admin/products'
@@ -661,6 +666,26 @@ export default function AdminProductsPage() {
                   placeholder="Descreva o produto..."
                   className="w-full border border-gray-200 rounded-lg px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-pink-500 resize-none"
                 />
+              </div>
+
+              {/* YouTube Video URL */}
+              <div>
+                <label className="block text-sm font-medium text-gray-700 mb-1">Link do Vídeo (Youtube)</label>
+                <div className="relative">
+                  <input
+                    type="url"
+                    value={form.videoUrl}
+                    onChange={e => setForm(f => ({ ...f, videoUrl: e.target.value }))}
+                    placeholder="https://www.youtube.com/watch?v=..."
+                    className="w-full border border-gray-200 rounded-lg pl-3 pr-10 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-pink-500"
+                  />
+                  <div className="absolute right-3 top-2.5">
+                    <svg className="w-4 h-4 text-red-600" fill="currentColor" viewBox="0 0 24 24">
+                      <path d="M19.615 3.184c-3.604-.246-11.631-.245-15.23 0-3.897.266-4.356 2.62-4.385 8.816.029 6.185.484 8.549 4.385 8.816 3.6.245 11.626.246 15.23 0 3.897-.266 4.356-2.62 4.385-8.816-.029-6.185-.484-8.549-4.385-8.816zm-10.615 12.816v-8l8 3.993-8 4.007z" />
+                    </svg>
+                  </div>
+                </div>
+                <p className="text-[10px] text-gray-400 mt-1">Opcional. Se preenchido, um player de vídeo aparecerá na página do produto.</p>
               </div>
 
               {/* Price + Category */}

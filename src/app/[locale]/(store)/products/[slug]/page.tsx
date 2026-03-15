@@ -7,6 +7,7 @@ import Image from 'next/image'
 import { Download, ShieldCheck } from 'lucide-react'
 import AddToCartButton from './add-to-cart-button'
 import ProductGallery from './product-gallery'
+import YouTubeEmbed from '@/components/store/youtube-embed'
 
 async function getProduct(slug: string, locale: string) {
   await connectMongo()
@@ -108,6 +109,19 @@ export default async function ProductPage({
           </div>
         </div>
       </div>
+
+      {/* Video Content */}
+      {p.videoUrl && (
+        <div className="mt-16 lg:mt-24 pt-12 border-t border-gray-100 flex justify-center">
+          <div className="w-full max-w-4xl">
+            <h3 className="text-2xl font-bold text-gray-900 mb-8 flex items-center gap-3">
+              <span className="w-1.5 h-8 bg-pink-500 rounded-full inline-block shrink-0"></span>
+              {locale === 'en' ? 'See in Action' : 'Veja em Ação'}
+            </h3>
+            <YouTubeEmbed url={p.videoUrl} title={pName} />
+          </div>
+        </div>
+      )}
 
       {/* Description */}
       {pDesc && (

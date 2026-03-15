@@ -19,6 +19,7 @@ const ProductSchema = new Schema(
         metaTitle: { type: String },
         metaDescription: { type: String },
         demoUrl: { type: String },
+        videoUrl: { type: String },
     },
     { timestamps: true }
 )

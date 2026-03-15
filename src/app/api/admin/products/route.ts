@@ -18,6 +18,7 @@ const schema = z.object({
     metaTitle: z.string().optional(),
     metaDescription: z.string().optional(),
     demoUrl: z.string().optional(),
+    videoUrl: z.string().optional(),
 })
 
 export async function GET(req: Request) {
