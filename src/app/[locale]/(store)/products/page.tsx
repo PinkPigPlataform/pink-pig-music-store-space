@@ -105,6 +105,7 @@ export default async function ProductsPage({
                       src={product.images[0]}
                       alt={pName}
                       fill
+                      sizes="(max-width: 768px) 100vw, (max-width: 1024px) 50vw, (max-width: 1280px) 33vw, 25vw"
                       className="object-contain p-4 group-hover:scale-105 transition-transform duration-300"
                     />
                   ) : (

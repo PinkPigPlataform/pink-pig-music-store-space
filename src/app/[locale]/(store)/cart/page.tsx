@@ -70,7 +70,7 @@ export default function CartPage() {
           >
             <div className="w-16 h-16 bg-gray-100 rounded-lg overflow-hidden relative shrink-0">
               {item.image ? (
-                <Image src={item.image} alt={item.name} fill className="object-cover" />
+                <Image src={item.image} alt={item.name} fill sizes="64px" className="object-cover" />
               ) : (
                 <div className="w-full h-full flex items-center justify-center text-gray-300 text-xs">
                   IMG

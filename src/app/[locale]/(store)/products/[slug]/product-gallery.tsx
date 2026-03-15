@@ -55,6 +55,7 @@ export default function ProductGallery({ images, productName }: ProductGalleryPr
           src={images[activeIndex]}
           alt={`${productName} - Image ${activeIndex + 1}`}
           fill
+          sizes="(max-width: 768px) 100vw, (max-width: 1200px) 50vw, 800px"
           className="object-contain p-4 sm:p-8 drop-shadow-[0_20px_30px_rgba(0,0,0,0.1)] transition-all duration-700 ease-out group-hover:scale-[1.05]"
           priority
         />
@@ -111,6 +112,7 @@ export default function ProductGallery({ images, productName }: ProductGalleryPr
                 src={img}
                 alt={`${productName} thumbnail ${idx + 1}`}
                 fill
+                sizes="(max-width: 768px) 80px, 96px"
                 className="object-contain p-2 drop-shadow-sm"
               />
             </button>
