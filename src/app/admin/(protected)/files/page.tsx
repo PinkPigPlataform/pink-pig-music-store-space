@@ -30,7 +30,7 @@ export default function AdminFilesPage() {
 
   async function load() {
     setLoading(true)
-    const res = await fetch('/api/admin/files')
+    const res = await fetch('/api/admin/files?limit=100')
     const data = await res.json()
     setFiles(data.data ?? [])
     setLoading(false)

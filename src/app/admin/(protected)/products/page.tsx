@@ -76,7 +76,7 @@ export default function AdminProductsPage() {
   async function loadMeta() {
     const [catRes, fileRes] = await Promise.all([
       fetch('/api/admin/categories'),
-      fetch('/api/admin/files'),
+      fetch('/api/admin/files?limit=100'),
     ])
     const [catData, fileData] = await Promise.all([catRes.json(), fileRes.json()])
     setCategories(catData.data ?? [])
