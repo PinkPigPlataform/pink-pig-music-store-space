@@ -4,6 +4,8 @@ import { requireAdmin } from '@/lib/api'
 import { connectMongo } from '@/lib/mongodb'
 import DigitalFileModel from '@/lib/models/DigitalFile'
 
+export const dynamic = 'force-dynamic'
+
 export async function GET(req: Request) {
     const { session, response } = await requireAdmin()
     if (response) return response
@@ -11,13 +13,9 @@ export async function GET(req: Request) {
     await connectMongo()
 
     const { searchParams } = new URL(req.url)
-    let page = parseInt(searchParams.get('page') || '1', 10)
-    let limit = parseInt(searchParams.get('limit') || '100', 10)
-
-    if (isNaN(page) || page < 1) page = 1
-    if (isNaN(limit) || limit < 1) limit = 100
-    if (limit > 200) limit = 200
-
+    const rawLimit = Number(searchParams.get('limit') || 100)
+    const limit = Math.min(Math.max(rawLimit, 1), 200)
+    const page = Math.max(Number(searchParams.get('page') || 1), 1)
     const skip = (page - 1) * limit
 
     const [files, total] = await Promise.all([
@@ -27,10 +25,8 @@ export async function GET(req: Request) {
             .skip(skip)
             .limit(limit)
             .lean(),
-        DigitalFileModel.countDocuments()
+        DigitalFileModel.countDocuments(),
     ])
-
-    const totalPages = Math.ceil(total / limit)
 
     return NextResponse.json({
         data: files,
@@ -38,8 +34,8 @@ export async function GET(req: Request) {
             page,
             limit,
             total,
-            totalPages
-        }
+            totalPages: Math.ceil(total / limit),
+        },
     })
 }
 
