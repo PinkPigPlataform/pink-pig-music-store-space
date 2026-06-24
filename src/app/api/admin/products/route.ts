@@ -7,6 +7,9 @@ import DigitalFileModel from '@/lib/models/DigitalFile'
 import { generateSlug } from '@/lib/utils'
 import { z } from 'zod'
 
+// Force Next.js bundler to keep these models registered in the runtime (prevents tree-shaking)
+const _preventTreeShaking = [CategoryModel, DigitalFileModel]
+
 const schema = z.object({
     name: z.string().min(1),
     locale: z.enum(['pt', 'en']).default('pt'),
