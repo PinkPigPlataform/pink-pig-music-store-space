@@ -4,6 +4,7 @@ import { useEffect, useRef, useState } from 'react'
 import { AdminHeader } from '@/components/admin/header'
 import { Upload, File, Loader2, Trash2, ShieldCheck } from 'lucide-react'
 import { toast } from 'sonner'
+import { upload } from '@vercel/blob/client'
 
 interface DigitalFile {
   _id: string
@@ -39,19 +40,44 @@ export default function AdminFilesPage() {
   async function handleUpload(e: React.ChangeEvent<HTMLInputElement>) {
     const file = e.target.files?.[0]
     if (!file) return
+
     setUploading(true)
-    const formData = new FormData()
-    formData.append('file', file)
-    const res = await fetch('/api/admin/files', { method: 'POST', body: formData })
-    if (res.ok) {
-      toast.success('Arquivo enviado!')
-      load()
-    } else {
-      const d = await res.json()
-      toast.error(d.error ?? 'Erro no upload')
+    try {
+      // Direct client upload to Vercel Blob (bypasses serverless functions limit of 4.5MB)
+      const blob = await upload(file.name, file, {
+        access: 'public',
+        handleUploadUrl: '/api/admin/files/upload',
+      })
+
+      // Register file metadata in database
+      const res = await fetch('/api/admin/files', {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify({
+          name: file.name,
+          url: blob.url,
+          blobKey: blob.pathname,
+          mime: file.type,
+          size: file.size,
+        }),
+      })
+
+      if (res.ok) {
+        toast.success('Arquivo enviado!')
+        load()
+      } else {
+        const d = await res.json()
+        toast.error(d.error ?? 'Erro no upload')
+      }
+    } catch (err) {
+      console.error(err)
+      toast.error('Erro de conexão ao enviar arquivo')
+    } finally {
+      setUploading(false)
+      if (fileRef.current) fileRef.current.value = ''
     }
-    setUploading(false)
-    if (fileRef.current) fileRef.current.value = ''
   }
 
   async function handleDelete(id: string, name: string) {

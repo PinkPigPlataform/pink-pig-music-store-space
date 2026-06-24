@@ -6,6 +6,7 @@ import { AdminHeader } from '@/components/admin/header'
 import { formatPrice, formatDate } from '@/lib/utils'
 import { Plus, Search, Edit, Trash2, Package, X, Loader2, ImagePlus, Star, File, Upload, ArrowUp, ArrowDown, GripVertical, Copy, ShieldCheck } from 'lucide-react'
 import { toast } from 'sonner'
+import { upload } from '@vercel/blob/client'
 
 // ─── Types ───────────────────────────────────────────────
 interface Category { _id: string; label: any; locale: string; parent?: { _id: string; label: any } | null }
@@ -204,11 +205,30 @@ export default function AdminProductsPage() {
   // ── Digital File upload ───────────────────────────────────
   async function processDigitalFile(file: File) {
     if (!file) return
+
     setUploadingFile(true)
-    const fd = new FormData()
-    fd.append('file', file)
     try {
-      const res = await fetch('/api/admin/files', { method: 'POST', body: fd })
+      // Direct client upload to Vercel Blob (bypasses serverless functions limit of 4.5MB)
+      const blob = await upload(file.name, file, {
+        access: 'public',
+        handleUploadUrl: '/api/admin/files/upload',
+      })
+
+      // Register file metadata in database
+      const res = await fetch('/api/admin/files', {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify({
+          name: file.name,
+          url: blob.url,
+          blobKey: blob.pathname,
+          mime: file.type,
+          size: file.size,
+        }),
+      })
+
       const data = await res.json()
       if (res.ok) {
         const newFile = data.data
@@ -218,7 +238,8 @@ export default function AdminProductsPage() {
       } else {
         toast.error(data.error ?? 'Erro no envio do arquivo')
       }
-    } catch {
+    } catch (err) {
+      console.error(err)
       toast.error('Erro de conexão ao enviar arquivo')
     } finally {
       setUploadingFile(false)
