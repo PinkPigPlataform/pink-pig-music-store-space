@@ -32,26 +32,31 @@ export async function GET(req: Request) {
     const limit = Math.min(50, parseInt(searchParams.get('limit') || '20'))
     const search = searchParams.get('search') || ''
 
-    await connectMongo()
+    try {
+        await connectMongo()
 
-    const query: Record<string, unknown> = {}
-    if (search) query.name = { $regex: search, $options: 'i' }
+        const query: Record<string, unknown> = {}
+        if (search) query.name = { $regex: search, $options: 'i' }
 
-    const [products, total] = await Promise.all([
-        ProductModel.find(query)
-            .populate('category', 'label value')
-            .populate('digitalFile', 'name')
-            .sort({ createdAt: -1 })
-            .skip((page - 1) * limit)
-            .limit(limit)
-            .lean(),
-        ProductModel.countDocuments(query),
-    ])
+        const [products, total] = await Promise.all([
+            ProductModel.find(query)
+                .populate('category', 'label value')
+                .populate('digitalFile', 'name')
+                .sort({ createdAt: -1 })
+                .skip((page - 1) * limit)
+                .limit(limit)
+                .lean(),
+            ProductModel.countDocuments(query),
+        ])
 
-    return NextResponse.json({
-        data: products,
-        meta: { page, limit, total, pages: Math.ceil(total / limit) },
-    })
+        return NextResponse.json({
+            data: products,
+            meta: { page, limit, total, pages: Math.ceil(total / limit) },
+        })
+    } catch (err: any) {
+        console.error('Error fetching products:', err)
+        return NextResponse.json({ error: err.message || 'Erro interno' }, { status: 500 })
+    }
 }
 
 export async function POST(req: Request) {

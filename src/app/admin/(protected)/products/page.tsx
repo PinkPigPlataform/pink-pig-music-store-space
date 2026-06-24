@@ -70,12 +70,12 @@ export default function AdminProductsPage() {
     setLoading(true)
     try {
       const res = await fetch(`/api/admin/products?search=${q}&limit=50`)
-      if (!res.ok) throw new Error('Erro na requisição')
       const data = await res.json()
+      if (!res.ok) throw new Error(data.error || 'Erro na requisição')
       setProducts(data.data ?? [])
-    } catch (err) {
+    } catch (err: any) {
       console.error(err)
-      toast.error('Erro de conexão ao carregar produtos')
+      toast.error(`Erro: ${err.message || 'Erro de conexão ao carregar produtos'}`)
     } finally {
       setLoading(false)
     }
