@@ -2,6 +2,8 @@ import { NextResponse } from 'next/server'
 import { requireAdmin } from '@/lib/api'
 import { connectMongo } from '@/lib/mongodb'
 import ProductModel from '@/lib/models/Product'
+import CategoryModel from '@/lib/models/Category'
+import DigitalFileModel from '@/lib/models/DigitalFile'
 import { generateSlug } from '@/lib/utils'
 import { z } from 'zod'
 

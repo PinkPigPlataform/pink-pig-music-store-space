@@ -68,10 +68,17 @@ export default function AdminProductsPage() {
   // ── Data loading ─────────────────────────────────────────
   async function loadProducts(q = '') {
     setLoading(true)
-    const res = await fetch(`/api/admin/products?search=${q}&limit=50`)
-    const data = await res.json()
-    setProducts(data.data ?? [])
-    setLoading(false)
+    try {
+      const res = await fetch(`/api/admin/products?search=${q}&limit=50`)
+      if (!res.ok) throw new Error('Erro na requisição')
+      const data = await res.json()
+      setProducts(data.data ?? [])
+    } catch (err) {
+      console.error(err)
+      toast.error('Erro de conexão ao carregar produtos')
+    } finally {
+      setLoading(false)
+    }
   }
 
   const [metaLoaded, setMetaLoaded] = useState(false)
