@@ -74,26 +74,36 @@ export default function AdminProductsPage() {
     setLoading(false)
   }
 
+  const [metaLoaded, setMetaLoaded] = useState(false)
+
   async function loadMeta() {
-    const [catRes, fileRes] = await Promise.all([
-      fetch('/api/admin/categories'),
-      fetch('/api/admin/files?limit=100'),
-    ])
-    const [catData, fileData] = await Promise.all([catRes.json(), fileRes.json()])
-    setCategories(catData.data ?? [])
-    setDigitalFiles(fileData.data ?? [])
+    if (metaLoaded) return
+    try {
+      const [catRes, fileRes] = await Promise.all([
+        fetch('/api/admin/categories'),
+        fetch('/api/admin/files?limit=100'),
+      ])
+      const [catData, fileData] = await Promise.all([catRes.json(), fileRes.json()])
+      setCategories(catData.data ?? [])
+      setDigitalFiles(fileData.data ?? [])
+      setMetaLoaded(true)
+    } catch (err) {
+      console.error('Error loading metadata:', err)
+    }
   }
 
-  useEffect(() => { loadProducts(); loadMeta() }, [])
+  useEffect(() => { loadProducts() }, [])
 
   // ── Modal helpers ─────────────────────────────────────────
   function openCreate() {
+    loadMeta()
     setEditing(null)
     setForm(EMPTY_FORM)
     setModalOpen(true)
   }
 
   function openEdit(p: Product) {
+    loadMeta()
     setEditing(p)
     setForm({
       name: p.name || '',
