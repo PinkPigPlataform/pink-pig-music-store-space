@@ -16,6 +16,26 @@ export default nextAuthMiddleware((req) => {
         return NextResponse.next()
     }
 
+    const pathname = req.nextUrl.pathname
+    const isAccountRoute = pathname.includes('/account') || pathname.includes('/conta')
+    
+    if (isAccountRoute) {
+        const token = req.cookies.get('user-token')?.value
+        if (!token) {
+            const localeMatch = pathname.match(/^\/([a-z]{2})\b/)
+            const locale = localeMatch ? localeMatch[1] : null
+            let signInPath = '/sign-in'
+            if (locale === 'pt') {
+                signInPath = '/pt/entrar'
+            } else if (locale === 'en') {
+                signInPath = '/en/sign-in'
+            }
+            const redirectUrl = new URL(signInPath, req.url)
+            redirectUrl.searchParams.set('redirect', pathname + req.nextUrl.search)
+            return NextResponse.redirect(redirectUrl)
+        }
+    }
+
     return intlMiddleware(req)
 })
 

@@ -2,7 +2,7 @@
 
 import { useEffect, useState } from 'react'
 import { AdminHeader } from '@/components/admin/header'
-import { formatPrice, formatDate } from '@/lib/utils'
+import { formatPrice, formatDateTime } from '@/lib/utils'
 import { ShoppingCart } from 'lucide-react'
 
 interface Order {
@@ -80,7 +80,7 @@ export default function AdminOrdersPage() {
                         </span>
                       </td>
                       <td className="px-4 py-3.5 text-gray-500 hidden sm:table-cell text-xs">
-                        {formatDate(o.createdAt)}
+                        {formatDateTime(o.createdAt)}
                       </td>
                     </tr>
                   )

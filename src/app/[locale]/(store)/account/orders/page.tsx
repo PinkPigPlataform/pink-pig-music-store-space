@@ -19,7 +19,16 @@ async function getUserOrders(userId: string) {
     .lean()
 }
 
-export default async function OrdersPage() {
+import { ToastTrigger } from '@/components/store/ToastTrigger'
+
+export default async function OrdersPage({
+  searchParams
+}: {
+  searchParams: Promise<{ error?: string }>
+}) {
+  const params = await searchParams
+  const error = params.error
+
   const cookieStore = await cookies()
   const token = cookieStore.get('user-token')?.value
 
@@ -32,6 +41,7 @@ export default async function OrdersPage() {
 
   return (
     <div className="max-w-3xl mx-auto px-4 py-10">
+      {error === 'not-found' && <ToastTrigger message="Pedido não encontrado" />}
       <h1 className="text-2xl font-bold text-gray-900 mb-6">Meus pedidos</h1>
 
       {orders.length === 0 ? (
