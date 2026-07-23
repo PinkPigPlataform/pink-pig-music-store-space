@@ -5,7 +5,7 @@ import { formatPrice } from '@/lib/utils'
 import { useLocale } from 'next-intl'
 import Image from 'next/image'
 import Link from 'next/link'
-import { Trash2, ShoppingBag, ArrowRight } from 'lucide-react'
+import { Trash2, ShoppingBag, ArrowRight, AlertCircle } from 'lucide-react'
 import { useState } from 'react'
 import { toast } from 'sonner'
 import { useRouter } from 'next/navigation'
@@ -15,6 +15,15 @@ export default function CartPage() {
   const { items, removeItem, clearCart, total } = useCartStore()
   const [loading, setLoading] = useState(false)
   const router = useRouter()
+
+  const cartCurrency = items[0]?.currency || (items[0]?.locale === 'en' ? 'USD' : 'BRL')
+
+  let warningMessage = ''
+  if (locale.startsWith('en') && cartCurrency === 'BRL') {
+    warningMessage = 'This cart contains a Portuguese/BRL product. Checkout will continue in BRL.'
+  } else if (locale.startsWith('pt') && cartCurrency === 'USD') {
+    warningMessage = 'Este carrinho contém um produto em inglês/USD. A compra continuará em USD.'
+  }
 
   async function handleCheckout() {
     setLoading(true)
@@ -63,6 +72,13 @@ export default function CartPage() {
   return (
     <div className="max-w-3xl mx-auto px-4 py-10">
       <h1 className="text-2xl font-bold text-gray-900 mb-6">Carrinho</h1>
+
+      {warningMessage && (
+        <div className="mb-6 p-4 bg-amber-50 border border-amber-200 rounded-xl flex items-center gap-3 text-amber-800 text-sm font-medium">
+          <AlertCircle className="w-5 h-5 text-amber-600 shrink-0" />
+          <span>{warningMessage}</span>
+        </div>
+      )}
 
       <div className="space-y-4">
         {items.map((item) => {
