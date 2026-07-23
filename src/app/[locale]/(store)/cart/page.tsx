@@ -65,44 +65,52 @@ export default function CartPage() {
       <h1 className="text-2xl font-bold text-gray-900 mb-6">Carrinho</h1>
 
       <div className="space-y-4">
-        {items.map((item) => (
-          <div
-            key={item.id}
-            className="bg-white border rounded-xl p-4 flex items-center gap-4"
-          >
-            <div className="w-16 h-16 bg-gray-100 rounded-lg overflow-hidden relative shrink-0">
-              {item.image ? (
-                <Image src={item.image} alt={item.name} fill sizes="64px" className="object-cover" />
-              ) : (
-                <div className="w-full h-full flex items-center justify-center text-gray-300 text-xs">
-                  IMG
-                </div>
-              )}
-            </div>
-            <div className="flex-1 min-w-0">
-              <h3 className="font-semibold text-gray-900 truncate">{item.name}</h3>
-              <p className="text-pink-500 font-bold">
-                {formatPrice(Math.round(item.price * 100), locale)}
-              </p>
-            </div>
-            <button
-              onClick={() => {
-                removeItem(item.id)
-                toast.info('Item removido do carrinho')
-              }}
-              className="text-gray-400 hover:text-red-500 transition-colors p-1.5"
-              aria-label="Remover"
+        {items.map((item) => {
+          const itemCurrency = item.currency || (item.locale === 'en' ? 'USD' : 'BRL')
+          return (
+            <div
+              key={item.id}
+              className="bg-white border rounded-xl p-4 flex items-center gap-4"
             >
-              <Trash2 className="w-4 h-4" />
-            </button>
-          </div>
-        ))}
+              <div className="w-16 h-16 bg-gray-100 rounded-lg overflow-hidden relative shrink-0">
+                {item.image ? (
+                  <Image src={item.image} alt={item.name} fill sizes="64px" className="object-cover" />
+                ) : (
+                  <div className="w-full h-full flex items-center justify-center text-gray-300 text-xs">
+                    IMG
+                  </div>
+                )}
+              </div>
+              <div className="flex-1 min-w-0">
+                <h3 className="font-semibold text-gray-900 truncate">{item.name}</h3>
+                <p className="text-pink-500 font-bold">
+                  {formatPrice(Math.round(item.price * 100), itemCurrency)}
+                </p>
+              </div>
+              <button
+                onClick={() => {
+                  removeItem(item.id)
+                  toast.info('Item removido do carrinho')
+                }}
+                className="text-gray-400 hover:text-red-500 transition-colors p-1.5"
+                aria-label="Remover"
+              >
+                <Trash2 className="w-4 h-4" />
+              </button>
+            </div>
+          )
+        })}
       </div>
 
       <div className="mt-6 bg-white border rounded-xl p-6">
         <div className="flex justify-between text-lg font-bold text-gray-900 mb-4">
           <span>Total</span>
-          <span>{formatPrice(Math.round(total() * 100), locale)}</span>
+          <span>
+            {formatPrice(
+              Math.round(total() * 100),
+              items[0]?.currency || (items[0]?.locale === 'en' ? 'USD' : 'BRL')
+            )}
+          </span>
         </div>
         <button
           id="checkout-btn"

@@ -88,6 +88,8 @@ export default async function ProductPage({
                   price: p.price,
                   slug: pSlug,
                   image: p.images?.[0],
+                  locale: p.locale || locale,
+                  currency: (p.locale || locale) === 'en' ? 'USD' : 'BRL',
                 }}
               />
             </div>

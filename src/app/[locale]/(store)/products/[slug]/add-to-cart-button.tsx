@@ -11,6 +11,8 @@ interface Product {
   price: number
   slug: string
   image?: string
+  locale?: string
+  currency?: string
 }
 
 export default function AddToCartButton({ product }: { product: Product }) {
@@ -25,6 +27,8 @@ export default function AddToCartButton({ product }: { product: Product }) {
       price: product.price,
       slug: product.slug,
       image: product.image,
+      locale: product.locale,
+      currency: product.currency,
     })
     setAdded(true)
     toast.success(`${product.name} adicionado ao carrinho`)
