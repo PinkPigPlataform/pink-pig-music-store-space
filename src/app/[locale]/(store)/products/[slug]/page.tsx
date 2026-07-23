@@ -74,7 +74,7 @@ export default async function ProductPage({
 
           <div className="mt-2 flex items-baseline gap-2">
             <span className="text-5xl font-black text-gray-900 tracking-tight">
-              {formatPrice(Math.round(p.price * 100))}
+              {formatPrice(Math.round(p.price * 100), locale)}
             </span>
           </div>
 

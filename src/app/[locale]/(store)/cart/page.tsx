@@ -2,6 +2,7 @@
 
 import { useCartStore } from '@/lib/stores/cart'
 import { formatPrice } from '@/lib/utils'
+import { useLocale } from 'next-intl'
 import Image from 'next/image'
 import Link from 'next/link'
 import { Trash2, ShoppingBag, ArrowRight } from 'lucide-react'
@@ -10,6 +11,7 @@ import { toast } from 'sonner'
 import { useRouter } from 'next/navigation'
 
 export default function CartPage() {
+  const locale = useLocale()
   const { items, removeItem, clearCart, total } = useCartStore()
   const [loading, setLoading] = useState(false)
   const router = useRouter()
@@ -80,7 +82,7 @@ export default function CartPage() {
             <div className="flex-1 min-w-0">
               <h3 className="font-semibold text-gray-900 truncate">{item.name}</h3>
               <p className="text-pink-500 font-bold">
-                {formatPrice(Math.round(item.price * 100))}
+                {formatPrice(Math.round(item.price * 100), locale)}
               </p>
             </div>
             <button
@@ -100,7 +102,7 @@ export default function CartPage() {
       <div className="mt-6 bg-white border rounded-xl p-6">
         <div className="flex justify-between text-lg font-bold text-gray-900 mb-4">
           <span>Total</span>
-          <span>{formatPrice(Math.round(total() * 100))}</span>
+          <span>{formatPrice(Math.round(total() * 100), locale)}</span>
         </div>
         <button
           id="checkout-btn"

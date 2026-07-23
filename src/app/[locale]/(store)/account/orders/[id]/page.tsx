@@ -79,7 +79,7 @@ export default async function OrderDetailPage({
               {order.status === 'paid' ? 'Pago' : order.status}
             </span>
           </div>
-          <p className="font-bold text-gray-900">{formatPrice(order.total)}</p>
+          <p className="font-bold text-gray-900">{formatPrice(order.total, locale)}</p>
         </div>
         <div className="divide-y">
           {order.products.map((product) => (
@@ -90,7 +90,7 @@ export default async function OrderDetailPage({
               <div>
                 <p className="font-medium text-gray-900">{product.name}</p>
                 <p className="text-sm text-gray-500">
-                  {formatPrice(Math.round(product.price * 100))}
+                  {formatPrice(Math.round(product.price * 100), locale)}
                 </p>
               </div>
               {product.digitalFile && (

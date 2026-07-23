@@ -22,12 +22,15 @@ async function getUserOrders(userId: string) {
 import { ToastTrigger } from '@/components/store/ToastTrigger'
 
 export default async function OrdersPage({
-  searchParams
+  searchParams,
+  params
 }: {
   searchParams: Promise<{ error?: string }>
+  params: Promise<{ locale: string }>
 }) {
-  const params = await searchParams
-  const error = params.error
+  const [sParams, pParams] = await Promise.all([searchParams, params])
+  const error = sParams.error
+  const locale = pParams.locale
 
   const cookieStore = await cookies()
   const token = cookieStore.get('user-token')?.value
@@ -79,7 +82,7 @@ export default async function OrdersPage({
                   </p>
                   <p className="text-sm text-gray-700">{formatDate(order.createdAt)}</p>
                 </div>
-                <p className="font-bold text-gray-900">{formatPrice(order.total)}</p>
+                <p className="font-bold text-gray-900">{formatPrice(order.total, locale)}</p>
               </div>
               <div className="divide-y">
                 {order.products.map((product) => (
@@ -90,7 +93,7 @@ export default async function OrdersPage({
                     <div>
                       <p className="font-medium text-gray-900">{product.name}</p>
                       <p className="text-sm text-gray-500">
-                        {formatPrice(Math.round(product.price * 100))}
+                        {formatPrice(Math.round(product.price * 100), locale)}
                       </p>
                     </div>
                     {product.digitalFile && (
