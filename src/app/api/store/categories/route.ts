@@ -1,7 +1,7 @@
 import { NextResponse } from 'next/server'
 import { connectMongo } from '@/lib/mongodb'
 import CategoryModel from '@/lib/models/Category'
-
+export const dynamic = 'force-dynamic'
 export async function GET(request: Request) {
     try {
         await connectMongo()
