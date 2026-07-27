@@ -45,7 +45,7 @@ export function AdminShell({ children }: { children: React.ReactNode }) {
             <Menu className="w-6 h-6" />
           </button>
           <span className="text-white font-bold text-sm">
-            {process.env.NEXT_PUBLIC_STORE_NAME || 'Admin Panel'}
+            {process.env.NEXT_PUBLIC_STORE_NAME || 'Pink Pig Store'}
           </span>
         </div>
 

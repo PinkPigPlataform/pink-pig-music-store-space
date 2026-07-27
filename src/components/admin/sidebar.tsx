@@ -45,7 +45,7 @@ export function Sidebar({ onNavigate }: SidebarProps) {
           </div>
           <div>
             <p className="font-bold text-sm text-white leading-tight">
-              {process.env.NEXT_PUBLIC_STORE_NAME || 'Minha Loja'}
+              {process.env.NEXT_PUBLIC_STORE_NAME || 'Pink Pig Store'}
             </p>
             <p className="text-[10px] text-pink-400 font-medium uppercase tracking-wider">Admin Panel</p>
           </div>

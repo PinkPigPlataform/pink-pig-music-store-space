@@ -3,7 +3,7 @@ import { getTranslations } from 'next-intl/server'
 
 export default async function StoreFooter() {
   const year = new Date().getFullYear()
-  const name = process.env.NEXT_PUBLIC_STORE_NAME || 'Loja Digital'
+  const name = process.env.NEXT_PUBLIC_STORE_NAME || 'Pink Pig Store'
   const t = await getTranslations('Footer')
 
   return (

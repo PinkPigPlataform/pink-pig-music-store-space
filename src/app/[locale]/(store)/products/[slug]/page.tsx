@@ -1,7 +1,9 @@
 import { connectMongo } from '@/lib/mongodb'
 import ProductModel from '@/lib/models/Product'
 import '@/lib/models/Category'
-import { formatPrice } from '@/lib/utils'
+import { formatPrice, truncate } from '@/lib/utils'
+import { productUrl } from '@/lib/routes'
+import { getTranslations } from 'next-intl/server'
 import { notFound } from 'next/navigation'
 import Image from 'next/image'
 import { Download, ShieldCheck } from 'lucide-react'
@@ -27,12 +29,35 @@ export async function generateMetadata({ params }: { params: Promise<{ locale: s
 
   const p = product as any
   const pName = p.name
-  const metaTitle = p.metaTitle
-  const metaDesc = p.metaDescription
+  const title = p.metaTitle || pName
+
+  // Fallback: se metaDescription estiver vazio, usa a descricao do produto.
+  const rawDesc = p.metaDescription || p.description || ''
+  const description = rawDesc
+    ? truncate(String(rawDesc).replace(/\s+/g, ' ').trim(), 155)
+    : undefined
+
+  const url = productUrl(locale, p.slug)
+  const cover = p.images?.[0]
 
   return {
-    title: metaTitle || pName,
-    description: metaDesc,
+    title,
+    description,
+    alternates: { canonical: url },
+    openGraph: {
+      type: 'website',
+      siteName: process.env.NEXT_PUBLIC_STORE_NAME || 'Pink Pig Store',
+      title,
+      description,
+      url,
+      ...(cover ? { images: [{ url: cover }] } : {}),
+    },
+    twitter: {
+      card: 'summary_large_image',
+      title,
+      description,
+      ...(cover ? { images: [cover] } : {}),
+    },
   }
 }
 
@@ -42,7 +67,10 @@ export default async function ProductPage({
   params: Promise<{ locale: string, slug: string }>
 }) {
   const { locale, slug } = await params;
-  const product = await getProduct(slug, locale)
+  const [product, t] = await Promise.all([
+    getProduct(slug, locale),
+    getTranslations('ProductsPage'),
+  ])
   if (!product) notFound()
 
   const p = product as any
@@ -51,8 +79,31 @@ export default async function ProductPage({
   const pDesc = p.description
   const catLabel = p.category?.label || ''
 
+  const jsonLd = {
+    '@context': 'https://schema.org',
+    '@type': 'Product',
+    name: pName,
+    ...(pDesc ? { description: String(pDesc).replace(/\s+/g, ' ').trim() } : {}),
+    ...(p.images?.[0] ? { image: p.images } : {}),
+    brand: {
+      '@type': 'Brand',
+      name: process.env.NEXT_PUBLIC_STORE_NAME || 'Pink Pig Store',
+    },
+    offers: {
+      '@type': 'Offer',
+      price: Number(p.price).toFixed(2),
+      priceCurrency: (p.locale || locale) === 'en' ? 'USD' : 'BRL',
+      availability: 'https://schema.org/InStock',
+      url: productUrl(locale, pSlug),
+    },
+  }
+
   return (
     <div className="max-w-6xl mx-auto px-4 py-8 md:py-12">
+      <script
+        type="application/ld+json"
+        dangerouslySetInnerHTML={{ __html: JSON.stringify(jsonLd) }}
+      />
       <div className="grid grid-cols-1 lg:grid-cols-12 gap-10 lg:gap-14">
         {/* Images */}
         <div className="lg:col-span-6 xl:col-span-6">
@@ -99,13 +150,13 @@ export default async function ProductPage({
                 <div className="w-10 h-10 rounded-full bg-green-100 flex items-center justify-center shrink-0">
                   <ShieldCheck className="w-5 h-5 text-green-600" />
                 </div>
-                Pagamento 100% seguro via Stripe
+                {t('securePayment')}
               </div>
               <div className="flex items-center gap-4 text-sm text-gray-700 font-medium">
                 <div className="w-10 h-10 rounded-full bg-pink-100 flex items-center justify-center shrink-0">
                   <Download className="w-5 h-5 text-pink-600" />
                 </div>
-                Download imediato após a confirmação
+                {t('instantDownload')}
               </div>
             </div>
           </div>
@@ -131,7 +182,7 @@ export default async function ProductPage({
           <div className="max-w-3xl mx-auto">
             <h3 className="text-2xl font-bold text-gray-900 mb-8 flex items-center gap-3">
               <span className="w-1.5 h-8 bg-pink-500 rounded-full inline-block shrink-0"></span>
-              Sobre o conteúdo
+              {t('aboutContent')}
             </h3>
             <div className="text-gray-600 leading-relaxed whitespace-pre-wrap text-[1.05rem]">
               {pDesc}

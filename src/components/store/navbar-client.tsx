@@ -30,7 +30,7 @@ export default function NavbarClient({ user }: NavbarClientProps) {
         <Link href="/" className="flex items-center gap-2.5">
           <img src="/favicon.ico" alt="Logo" className="w-8 h-8 object-contain" />
           <span className="font-bold text-lg text-pink-500">
-            {process.env.NEXT_PUBLIC_STORE_NAME || 'Loja'}
+            {process.env.NEXT_PUBLIC_STORE_NAME || 'Pink Pig Store'}
           </span>
         </Link>
 

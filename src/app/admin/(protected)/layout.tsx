@@ -5,7 +5,7 @@ import { AdminShell } from '@/components/admin/admin-shell'
 import { Toaster } from 'sonner'
 
 export const metadata = {
-  title: 'Admin Panel | Pink Pig Plataform',
+  title: 'Admin Panel | Pink Pig Store',
   robots: { index: false, follow: false },
 }
 

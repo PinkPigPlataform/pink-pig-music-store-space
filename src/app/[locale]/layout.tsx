@@ -7,10 +7,13 @@ import { GoogleAnalytics } from '@/components/analytics/GoogleAnalytics'
 
 const inter = Inter({ subsets: ['latin'] })
 
+const STORE_NAME = process.env.NEXT_PUBLIC_STORE_NAME || 'Pink Pig Store'
+
 export const metadata: Metadata = {
+  metadataBase: new URL('https://www.pinkpigstore.com'),
   title: {
-    default: process.env.NEXT_PUBLIC_STORE_NAME || 'Loja Digital',
-    template: `%s | ${process.env.NEXT_PUBLIC_STORE_NAME || 'Loja Digital'}`,
+    default: STORE_NAME,
+    template: `%s | ${STORE_NAME}`,
   },
   description: 'Loja de produtos digitais',
 }

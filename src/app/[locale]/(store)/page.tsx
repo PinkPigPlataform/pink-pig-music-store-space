@@ -3,6 +3,7 @@ import { connectMongo } from '@/lib/mongodb'
 import ProductModel from '@/lib/models/Product'
 import '@/lib/models/Category'
 import { formatPrice } from '@/lib/utils'
+import { productsPath, productPath } from '@/lib/routes'
 import { ArrowRight, ShieldCheck, Download, Zap } from 'lucide-react'
 import Image from 'next/image'
 import { getTranslations } from 'next-intl/server'
@@ -51,7 +52,7 @@ export default async function StorePage({
           </p>
           <div className="mt-8 flex flex-wrap gap-4 justify-center">
             <Link
-              href="/products"
+              href={productsPath(locale)}
               className="inline-flex items-center gap-2 bg-pink-500 hover:bg-pink-600 text-white font-semibold px-8 py-3.5 rounded-full transition-colors shadow-lg shadow-pink-200"
             >
               {t('heroCta')} <ArrowRight className="w-4 h-4" />
@@ -82,7 +83,7 @@ export default async function StorePage({
             <div className="flex items-center justify-between mb-8">
               <h2 className="text-2xl font-bold text-gray-900">{t('sectionTitle')}</h2>
               <Link
-                href="/products"
+                href={productsPath(locale)}
                 className="text-pink-500 hover:text-pink-600 font-medium flex items-center gap-1"
               >
                 {t('seeAll')} <ArrowRight className="w-4 h-4" />
@@ -97,7 +98,7 @@ export default async function StorePage({
                 return (
                   <Link
                     key={product._id.toString()}
-                    href={`/products/${pSlug}`}
+                    href={productPath(locale, pSlug)}
                     className="group bg-white rounded-xl overflow-hidden border hover:shadow-lg transition-shadow"
                   >
                     <div className="aspect-square bg-gray-100 relative overflow-hidden">

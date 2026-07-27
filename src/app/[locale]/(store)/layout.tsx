@@ -1,11 +1,9 @@
-import type { Metadata } from 'next'
 import { Toaster } from 'sonner'
 import StoreNavbar from '@/components/store/navbar'
 import StoreFooter from '@/components/store/footer'
 
-export const metadata: Metadata = {
-  title: `${process.env.NEXT_PUBLIC_STORE_NAME || 'Loja Digital'}`,
-}
+// Sem metadata.title aqui: o layout raiz ja define title.default e
+// title.template. Redefinir gerava "Pink Pig Store | Pink Pig Store".
 
 export default function StoreLayout({
   children,
