@@ -46,6 +46,7 @@ export async function POST(req: NextRequest) {
                             price: Math.round(p.price * 100),
                         })),
                         total: order.total,
+                        currency: order.currency,
                     })
                     await OrderModel.findByIdAndUpdate(orderId, { receiptEmailSent: true })
                 } catch (emailErr) {
