@@ -23,7 +23,12 @@ export default function YouTubeEmbed({ url, title }: YouTubeEmbedProps) {
   if (!videoId) return null
 
   const embedUrl = `https://www.youtube.com/embed/${videoId}?autoplay=1`
-  const thumbnailUrl = `https://img.youtube.com/vi/${videoId}/hqdefault.jpg`
+
+  // maxresdefault e 1280x720 (16:9 nativo, mesma proporcao do container).
+  // hqdefault e 480x360 (4:3), fica borrada e cortada no topo/base.
+  // maxres nao existe para todo video, entao ha fallback no onError.
+  const thumbnailUrl = `https://img.youtube.com/vi/${videoId}/maxresdefault.jpg`
+  const thumbnailFallback = `https://img.youtube.com/vi/${videoId}/hqdefault.jpg`
 
   if (!isPlaying) {
     return (
@@ -31,9 +36,14 @@ export default function YouTubeEmbed({ url, title }: YouTubeEmbedProps) {
         className="relative aspect-video w-full rounded-2xl overflow-hidden bg-gray-100 border border-gray-200 shadow-sm group cursor-pointer"
         onClick={() => setIsPlaying(true)}
       >
-        <img 
-          src={thumbnailUrl} 
-          alt={title || 'Saiba mais'} 
+        <img
+          src={thumbnailUrl}
+          alt={title || 'Saiba mais'}
+          loading="lazy"
+          onError={(e) => {
+            const img = e.currentTarget
+            if (img.src !== thumbnailFallback) img.src = thumbnailFallback
+          }}
           className="w-full h-full object-cover transition-transform duration-500 group-hover:scale-105"
         />
         <div className="absolute inset-0 bg-black/20 group-hover:bg-black/40 transition-colors flex items-center justify-center">
