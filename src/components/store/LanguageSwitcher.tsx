@@ -16,6 +16,14 @@ export default function LanguageSwitcher() {
     if (newLocale === locale) return
     setIsOpen(false)
     startTransition(() => {
+      // Produtos PT e EN sao documentos separados no banco, com slugs
+      // diferentes e sem campo que os ligue. Numa pagina de produto nao ha
+      // como saber o slug equivalente, entao vamos para a listagem do outro
+      // idioma em vez de gerar um 404.
+      if (pathname === '/products/[slug]') {
+        router.replace('/products', { locale: newLocale })
+        return
+      }
       router.replace(pathname, { locale: newLocale })
     })
   }

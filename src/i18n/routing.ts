@@ -26,6 +26,11 @@ export const routing = defineRouting({
             pt: '/produtos',
             en: '/products'
         },
+        // Rota dinamica precisa de entrada propria, senao /pt/produtos/<slug> da 404
+        '/products/[slug]': {
+            pt: '/produtos/[slug]',
+            en: '/products/[slug]'
+        },
         '/cart': {
             pt: '/carrinho',
             en: '/cart'

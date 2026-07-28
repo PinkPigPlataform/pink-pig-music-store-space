@@ -4,12 +4,13 @@ import ProductModel from '@/lib/models/Product'
 
 export async function GET(
     _req: Request,
-    { params }: { params: { slug: string } }
+    { params }: { params: Promise<{ slug: string }> }
 ) {
+    const resolvedParams = await params
     try {
         await connectMongo()
 
-        const product = await ProductModel.findOne({ slug: params.slug, active: true })
+        const product = await ProductModel.findOne({ slug: resolvedParams.slug, active: true })
             .populate('category', 'label value')
             .populate('images', 'url width height')
             .lean()

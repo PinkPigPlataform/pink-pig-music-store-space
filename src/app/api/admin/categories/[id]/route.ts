@@ -15,8 +15,9 @@ const updateSchema = z.object({
 
 export async function PUT(
     req: Request,
-    { params }: { params: { id: string } }
+    { params }: { params: Promise<{ id: string }> }
 ) {
+    const resolvedParams = await params
     const { response } = await requireAdmin()
     if (response) return response
 
@@ -28,7 +29,7 @@ export async function PUT(
 
         // Prevent circular refs and depth > 2
         if (data.parent) {
-            if (data.parent === params.id) {
+            if (data.parent === resolvedParams.id) {
                 return NextResponse.json({ error: 'Uma categoria não pode ser pai de si mesma' }, { status: 400 })
             }
             const parentCat = await CategoryModel.findById(data.parent)
@@ -47,14 +48,14 @@ export async function PUT(
             payload.value = value
 
             // Ensure new slug is unique
-            const existing = await CategoryModel.findOne({ value, _id: { $ne: params.id } })
+            const existing = await CategoryModel.findOne({ value, _id: { $ne: resolvedParams.id } })
             if (existing) {
                 return NextResponse.json({ error: 'Já existe uma categoria com este nome/link' }, { status: 409 })
             }
         }
 
         const cat = await CategoryModel.findByIdAndUpdate(
-            params.id,
+            resolvedParams.id,
             payload,
             { new: true }
         )
@@ -71,16 +72,17 @@ export async function PUT(
 
 export async function DELETE(
     _req: Request,
-    { params }: { params: { id: string } }
+    { params }: { params: Promise<{ id: string }> }
 ) {
+    const resolvedParams = await params
     const { response } = await requireAdmin()
     if (response) return response
 
     await connectMongo()
 
     // Move children to root before deleting parent
-    await CategoryModel.updateMany({ parent: params.id }, { parent: null })
-    await CategoryModel.findByIdAndDelete(params.id)
+    await CategoryModel.updateMany({ parent: resolvedParams.id }, { parent: null })
+    await CategoryModel.findByIdAndDelete(resolvedParams.id)
 
     return NextResponse.json({ message: 'Deletado' })
 }

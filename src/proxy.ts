@@ -8,7 +8,7 @@ const intlMiddleware = createMiddleware(routing)
 
 const { auth: nextAuthMiddleware } = NextAuth(authConfig)
 
-export default nextAuthMiddleware((req) => {
+const proxy = nextAuthMiddleware((req) => {
     const isOnAdmin = req.nextUrl.pathname.startsWith('/admin')
     const isOnApi = req.nextUrl.pathname.startsWith('/api')
 
@@ -38,6 +38,8 @@ export default nextAuthMiddleware((req) => {
 
     return intlMiddleware(req)
 })
+
+export default proxy
 
 export const config = {
     matcher: ['/((?!api|_next|_vercel|.*\\..*).*)'],

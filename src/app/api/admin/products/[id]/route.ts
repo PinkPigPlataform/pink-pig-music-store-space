@@ -5,13 +5,14 @@ import ProductModel from '@/lib/models/Product'
 
 export async function GET(
     _req: Request,
-    { params }: { params: { id: string } }
+    { params }: { params: Promise<{ id: string }> }
 ) {
+    const resolvedParams = await params
     const { response } = await requireAdmin()
     if (response) return response
 
     await connectMongo()
-    const product = await ProductModel.findById(params.id)
+    const product = await ProductModel.findById(resolvedParams.id)
         .populate('category', 'label value')
         .populate('digitalFile', 'name url size')
         .lean()
@@ -22,8 +23,9 @@ export async function GET(
 
 export async function PUT(
     req: Request,
-    { params }: { params: { id: string } }
+    { params }: { params: Promise<{ id: string }> }
 ) {
+    const resolvedParams = await params
     const { response } = await requireAdmin()
     if (response) return response
 
@@ -31,7 +33,7 @@ export async function PUT(
         const body = await req.json()
         await connectMongo()
 
-        const product = await ProductModel.findByIdAndUpdate(params.id, body, {
+        const product = await ProductModel.findByIdAndUpdate(resolvedParams.id, body, {
             new: true,
             runValidators: true,
         })
@@ -46,12 +48,13 @@ export async function PUT(
 
 export async function DELETE(
     _req: Request,
-    { params }: { params: { id: string } }
+    { params }: { params: Promise<{ id: string }> }
 ) {
+    const resolvedParams = await params
     const { response } = await requireAdmin()
     if (response) return response
 
     await connectMongo()
-    await ProductModel.findByIdAndDelete(params.id)
+    await ProductModel.findByIdAndDelete(resolvedParams.id)
     return NextResponse.json({ message: 'Deletado' })
 }

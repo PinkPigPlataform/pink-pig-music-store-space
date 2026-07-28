@@ -6,8 +6,9 @@ import DigitalFileModel from '@/lib/models/DigitalFile'
 
 export async function GET(
     _req: Request,
-    { params }: { params: { id: string; fileId: string } }
+    { params }: { params: Promise<{ id: string; fileId: string }> }
 ) {
+    const resolvedParams = await params
     const { user, response } = await requireUser()
     if (response) return response
 
@@ -15,7 +16,7 @@ export async function GET(
         await connectMongo()
 
         const order = await OrderModel.findOne({
-            _id: params.id,
+            _id: resolvedParams.id,
             user: user._id,
             status: 'paid',
         }).populate({ path: 'products', populate: { path: 'digitalFile' } })
@@ -25,14 +26,14 @@ export async function GET(
         }
 
         const hasFile = (order.products as Array<{ digitalFile?: { _id: { toString(): string } } }>).some(
-            (p) => p.digitalFile?._id?.toString() === params.fileId
+            (p) => p.digitalFile?._id?.toString() === resolvedParams.fileId
         )
 
         if (!hasFile) {
             return NextResponse.json({ error: 'Sem permissão' }, { status: 403 })
         }
 
-        const file = await DigitalFileModel.findById(params.fileId)
+        const file = await DigitalFileModel.findById(resolvedParams.fileId)
         if (!file) {
             return NextResponse.json({ error: 'Arquivo não encontrado' }, { status: 404 })
         }

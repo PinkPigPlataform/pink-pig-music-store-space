@@ -14,8 +14,9 @@ const updateSchema = z.object({
 
 export async function PUT(
     req: Request,
-    { params }: { params: { id: string } }
+    { params }: { params: Promise<{ id: string }> }
 ) {
+    const resolvedParams = await params
     const { session, response } = await requireRole('super_admin')
     if (response) return response
 
@@ -24,7 +25,7 @@ export async function PUT(
         const data = updateSchema.parse(body)
 
         await connectMongo()
-        const target = await AdminModel.findById(params.id)
+        const target = await AdminModel.findById(resolvedParams.id)
         if (!target) return NextResponse.json({ error: 'Admin não encontrado' }, { status: 404 })
 
         // super_admin cannot demote or deactivate themselves
@@ -64,19 +65,20 @@ export async function PUT(
 
 export async function DELETE(
     _req: Request,
-    { params }: { params: { id: string } }
+    { params }: { params: Promise<{ id: string }> }
 ) {
+    const resolvedParams = await params
     const { session, response } = await requireRole('super_admin')
     if (response) return response
 
     await connectMongo()
-    const target = await AdminModel.findById(params.id)
+    const target = await AdminModel.findById(resolvedParams.id)
     if (!target) return NextResponse.json({ error: 'Não encontrado' }, { status: 404 })
 
     if (target.email === session!.user!.email) {
         return NextResponse.json({ error: 'Não pode deletar sua própria conta' }, { status: 400 })
     }
 
-    await AdminModel.findByIdAndDelete(params.id)
+    await AdminModel.findByIdAndDelete(resolvedParams.id)
     return NextResponse.json({ message: 'Admin removido' })
 }

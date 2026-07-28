@@ -6,13 +6,14 @@ import { del } from '@vercel/blob'
 
 export async function DELETE(
     _req: Request,
-    { params }: { params: { id: string } }
+    { params }: { params: Promise<{ id: string }> }
 ) {
+    const resolvedParams = await params
     const { response } = await requireAdmin()
     if (response) return response
 
     await connectMongo()
-    const file = await DigitalFileModel.findById(params.id)
+    const file = await DigitalFileModel.findById(resolvedParams.id)
     if (!file) return NextResponse.json({ error: 'Não encontrado' }, { status: 404 })
 
     // Try to delete from Vercel Blob (best-effort — may already be gone)
@@ -22,6 +23,6 @@ export async function DELETE(
         // Blob may have been manually deleted already — ignore error
     }
 
-    await DigitalFileModel.findByIdAndDelete(params.id)
+    await DigitalFileModel.findByIdAndDelete(resolvedParams.id)
     return NextResponse.json({ message: 'Deletado' })
 }
