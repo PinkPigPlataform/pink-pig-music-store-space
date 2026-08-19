@@ -4,6 +4,7 @@ import {NextIntlClientProvider} from 'next-intl';
 import {getMessages} from 'next-intl/server';
 import '../globals.css'
 import { GoogleAnalytics } from '@/components/analytics/GoogleAnalytics'
+import { MetaPixel } from '@/components/analytics/MetaPixel'
 
 const inter = Inter({ subsets: ['latin'] })
 
@@ -42,6 +43,7 @@ export default async function RootLayout({
           {children}
         </NextIntlClientProvider>
         <GoogleAnalytics />
+        <MetaPixel />
       </body>
     </html>
   )

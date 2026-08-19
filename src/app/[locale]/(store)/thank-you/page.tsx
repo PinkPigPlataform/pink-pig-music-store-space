@@ -1,5 +1,6 @@
 import { CheckCircle, ArrowRight } from 'lucide-react'
 import Link from 'next/link'
+import { PurchaseTracker } from '@/components/analytics/PurchaseTracker'
 
 export default function ThankYouPage({
   searchParams,
@@ -8,6 +9,7 @@ export default function ThankYouPage({
 }) {
   return (
     <div className="min-h-[60vh] flex items-center justify-center px-4 py-20">
+      <PurchaseTracker orderId={searchParams.orderId} />
       <div className="text-center max-w-md">
         <div className="inline-flex items-center justify-center w-20 h-20 bg-green-100 rounded-full mb-6">
           <CheckCircle className="w-10 h-10 text-green-500" />
